@@ -19,7 +19,10 @@ jobs:
       with:
         toolchain: stable
         override: true
-        targets: wasm32-unknown-unknown, wasm32-wasip1
+        targets: wasm32-unknown-unknown, wasm32-wasi
+
+    - name: Add wasm32-wasip1 target (can be moved to list above when the target is added to toolchain action above)
+      run: rustup target add wasm32-wasip1
         
     - name: Install just
       uses: extractions/setup-just@v1
