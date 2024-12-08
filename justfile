@@ -1,3 +1,5 @@
+set shell := ["bash", "-euo", "pipefail"]
+
 build:
   #!/usr/bin/env sh
   for dir in servlets/*/; do
