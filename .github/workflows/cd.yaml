@@ -1,0 +1,38 @@
+name: Build and Push
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+        targets: wasm32-unknown-unknown, wasm32-wasip1
+        
+    - name: Install just
+      uses: extractions/setup-just@v1
+      
+    - name: Install Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 'lts/*'
+        
+    - name: Install TinyGo
+      run: |
+        wget https://github.com/tinygo-org/tinygo/releases/download/v0.34.0/tinygo_0.34.0_amd64.deb
+        sudo dpkg -i tinygo_0.34.0_amd64.deb
+        
+    - name: Publish all the servlets
+      run: just push
