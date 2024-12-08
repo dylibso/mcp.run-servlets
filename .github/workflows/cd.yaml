@@ -33,7 +33,11 @@ jobs:
       run: |
         wget https://github.com/tinygo-org/tinygo/releases/download/v0.34.0/tinygo_0.34.0_amd64.deb
         sudo dpkg -i tinygo_0.34.0_amd64.deb
-        
+
+    - name: Install xtp CLI
+      run: |
+        curl https://static.dylibso.com/cli/install.sh -s | bash
+
     - name: Publish all the servlets
       env:
         XTP_TOKEN: ${{ secrets.XTP_TOKEN }}
