@@ -75,7 +75,13 @@ pub mod types {
     use super::*;
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub struct BlobResourceContents {
@@ -95,7 +101,13 @@ pub mod types {
     }
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub struct CallToolRequest {
@@ -109,16 +121,16 @@ pub mod types {
     }
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub struct CallToolResult {
-        /// This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses.
-        #[serde(rename = "_meta")]
-        #[serde(skip_serializing_if = "Option::is_none")]
-        #[serde(default)]
-        pub _meta: Option<serde_json::Map<String, serde_json::Value>>,
-
         #[serde(rename = "content")]
         pub content: Vec<types::Content>,
 
@@ -132,7 +144,13 @@ pub mod types {
     }
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub struct Content {
@@ -164,7 +182,13 @@ pub mod types {
     }
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub enum ContentType {
@@ -178,7 +202,13 @@ pub mod types {
     }
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub struct Params {
@@ -192,7 +222,13 @@ pub mod types {
     }
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub enum Role {
@@ -204,7 +240,13 @@ pub mod types {
     }
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub struct TextAnnotation {
@@ -224,7 +266,13 @@ pub mod types {
     }
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub struct TextResourceContents {
@@ -244,7 +292,13 @@ pub mod types {
     }
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub struct ToolDescription {
@@ -265,5 +319,21 @@ pub mod types {
 mod raw_imports {
     use super::*;
     #[host_fn]
-    extern "ExtismHost" {}
+    extern "ExtismHost" {
+
+        pub(crate) fn config_get(input: String) -> Json<Option<String>>;
+
+    }
+}
+
+/// config_get Get the configuration for the tool
+/// It takes input of String (The config key)
+/// And it returns an output Option<String> (The config value for the given key, or empty if not found)
+#[allow(unused)]
+pub(crate) fn config_get(input: String) -> std::result::Result<Option<String>, extism_pdk::Error> {
+    let res = unsafe { raw_imports::config_get(input)? };
+
+    let extism_pdk::Json(res) = res;
+
+    Ok(res)
 }
