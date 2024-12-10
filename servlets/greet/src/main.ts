@@ -1,4 +1,4 @@
-import { CallToolRequest, CallToolResult, ContentType, ToolDescription } from "./pdk";
+import { CallToolRequest, CallToolResult, config_get, ContentType, ToolDescription } from "./pdk";
 
 /**
  * Called when the tool is invoked.
@@ -11,11 +11,14 @@ export function callImpl(input: CallToolRequest): CallToolResult {
   if (!name) {
     throw new Error("Argument `name` must be provided")
   }
+
+  const greeter = config_get('name') || "anonymous"
+
   return {
     content: [
       {
         type: ContentType.Text,
-        text: `Hello ${name}!!!`
+        text: `${greeter} says: Hello, ${name}!`
       }
     ]
   }

@@ -1,3 +1,5 @@
+const hostFunctions = Host.getFunctions();
+
 function isNull(v: any): boolean {
   return v === undefined || v === null;
 }
@@ -84,8 +86,7 @@ export class BlobResourceContents {
  * Used by the client to invoke a tool provided by the server.
  */
 export class CallToolRequest {
-  // @ts-expect-error TS2564
-  method: string;
+  method?: string;
 
   // @ts-expect-error TS2564
   params: Params;
@@ -118,11 +119,6 @@ export class CallToolRequest {
  * should be reported as an MCP error response.
  */
 export class CallToolResult {
-  /**
-   * This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses.
-   */
-  _meta?: any;
-
   // @ts-expect-error TS2564
   content: Array<Content>;
 
@@ -327,4 +323,18 @@ export class ToolDescription {
       ...obj,
     };
   }
+}
+
+/**
+ * Get the configuration for the tool
+ *
+ * @param {string} input - The config key
+ * @returns {string} The config value for the given key, or empty if not found
+ */
+export function config_get(input: string): string {
+  const mem = Memory.fromString(input as string);
+
+  const ptr = hostFunctions.config_get(mem.offset);
+
+  return Memory.find(ptr).readJsonObject();
 }
