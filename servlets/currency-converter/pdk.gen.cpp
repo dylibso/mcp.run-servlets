@@ -18,7 +18,7 @@ JSONCONS_N_MEMBER_NAME_TRAITS(pdk::Content, 1, (type, "type"),
                               (annotations, "annotations"), (data, "data"),
                               (mimeType, "mimeType"), (text, "text"))
 JSONCONS_N_MEMBER_NAME_TRAITS(pdk::CallToolResult, 1, (content, "content"),
-                              (_meta, "_meta"), (isError, "isError"))
+                              (isError, "isError"))
 JSONCONS_N_MEMBER_NAME_TRAITS(pdk::Params, 1, (name, "name"),
                               (arguments, "arguments"))
 JSONCONS_N_MEMBER_NAME_TRAITS(pdk::CallToolRequest, 1, (params, "params"),
@@ -75,6 +75,29 @@ int32_t EXTISM_EXPORTED_FUNCTION(describe) {
 
 } // namespace exports
 
-namespace imports {} // namespace imports
+namespace imports {
+
+EXTISM_IMPORT_USER("config_get")
+extern extism::imports::RawHandle config_get(extism::imports::RawHandle);
+
+} // namespace imports
+
+std::expected<std::string, Error> config_get(std::string_view input) {
+  auto &encoded = input;
+  auto in_handle = extism::UniqueHandle<char>::from(encoded);
+  if (!in_handle) {
+    return std::unexpected(Error::extism);
+  }
+  auto out_raw = imports::config_get(*in_handle);
+  if (!out_raw) {
+    return std::unexpected(Error::host_null);
+  }
+  extism::UniqueHandle<char> out_handle(out_raw);
+  auto out_string = out_handle.string();
+  if (!out_string.size()) {
+    return std::unexpected(Error::not_json);
+  }
+  return jsoncons::decode_json<std::string>(std::move(out_string));
+}
 
 } // namespace pdk

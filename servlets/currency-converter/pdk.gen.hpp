@@ -78,9 +78,6 @@ struct Content {
 // tool calls, or any other exceptional conditions, should be reported as an MCP
 // error response.
 struct CallToolResult {
-  // This result property is reserved by the protocol to allow clients and
-  // servers to attach additional metadata to their responses.
-  std::optional<jsoncons::json> _meta;
   //
   std::vector<Content> content;
   // Whether the tool call ended in an error.  If not set, this is assumed to be
@@ -116,6 +113,14 @@ struct BlobResourceContents {
 
 // host function errors
 enum class Error { extism, host_null, not_json, json_null, not_implemented };
+
+/**
+ * Get the configuration for the tool
+ *
+ * @param input The config key
+ * @return The config value for the given key, or empty if not found
+ */
+std::expected<std::string, Error> config_get(std::string_view input);
 
 } // namespace pdk
 
