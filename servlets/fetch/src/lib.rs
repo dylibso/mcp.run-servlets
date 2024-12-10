@@ -101,7 +101,7 @@ pub(crate) fn describe() -> Result<ToolDescription, Error> {
     Ok(ToolDescription {
         name: "fetch".into(),
         description:
-            "Fetches the contents of a URL and returns it's contents converted to markdown".into(),
+            "Enables to open and access arbitrary URLs. Fetches the contents of a URL and returns its contents converted to markdown".into(),
         input_schema: schema,
     })
 }
