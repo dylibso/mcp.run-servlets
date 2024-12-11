@@ -45,9 +45,13 @@ jobs:
       run: |
         curl -L https://static.dylibso.com/cli/install.sh -s | bash
 
+    - name: Build and test all the servlets
+      run: |
+        just build
+        just test
+
     - name: Publish all the servlets
       env:
         XTP_TOKEN: ${{ secrets.XTP_TOKEN }}
       run: |
-        just test
         just push
