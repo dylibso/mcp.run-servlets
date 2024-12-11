@@ -115,7 +115,8 @@ struct BlobResourceContents {
 enum class Error { extism, host_null, not_json, json_null, not_implemented };
 
 /**
- * Get the configuration for the tool
+ * Get configuration values.
+ * Returns an empty string in case there is no value for a given key.
  *
  * @param input The config key
  * @return The config value for the given key, or empty if not found
@@ -136,7 +137,8 @@ std::expected<pdk::CallToolResult, pdk::Error>
 call(pdk::CallToolRequest &&input);
 
 /**
- * Called by mcpx to understand how and why to use this tool
+ * Called by mcpx to understand how and why to use this tool.
+ * Note: these imports are NOT available in this context: config_get
  *
  * @return The tool's description
  */
