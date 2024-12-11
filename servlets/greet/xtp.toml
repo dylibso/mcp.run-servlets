@@ -22,7 +22,7 @@ with = "../../test/testsuite/dist/test.wasm"
 mock_host = "../../test/host/dist/host.wasm"
 mock_input = { file = "mock_input.json" }
 
-# [[test]]
-# name = "no input"
-# with = "../../test/testsuite/dist/test.wasm"
-# mock_host = "../../test/host/dist/host.wasm"
+[[test]]
+name = "no input"
+with = "../../test/testsuite/dist/test.wasm"
+mock_host = "../../test/host/dist/host.wasm"

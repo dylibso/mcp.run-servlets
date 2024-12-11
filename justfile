@@ -23,8 +23,11 @@ test:
   xtp plugin build --path test/host
   xtp plugin build --path test/testsuite
 
-  cd servlets/greet
-  xtp plugin test
+   cd servlets/greet
+   xtp plugin test --log-level warning
+  
+   cd ../qr-code
+   xtp plugin test --log-level warning
 
-  cd ../qr-code
-  xtp plugin test
+  cd servlets/currency-converter
+  xtp plugin test --allow-host api.fxratesapi.com --log-level debug
