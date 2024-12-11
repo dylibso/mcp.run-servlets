@@ -24,4 +24,4 @@ test:
   xtp plugin build --path test/testsuite
 
   cd servlets/greet
-  xtp plugin test --log-level debug
+  xtp plugin test

@@ -1,4 +1,4 @@
 bin = "dist/test.wasm"
 
 [scripts]
-build = "mkdir -p dist && tinygo build -o dist/test.wasm -target wasi main.go"
+build = "mkdir -p dist && tinygo build -o dist/test.wasm -target wasi ."
