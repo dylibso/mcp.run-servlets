@@ -2,7 +2,7 @@ mod pdk;
 
 use base64::Engine;
 use extism_pdk::*;
-use pdk::types::*;
+use pdk::{config_get, types::*};
 use qrcode_png::{Color, QrCode, QrCodeEcc};
 use serde_json::{json, Map, Value};
 
@@ -17,6 +17,16 @@ pub(crate) fn call(input: CallToolRequest) -> Result<CallToolResult, Error> {
             .unwrap()
             .is_u64() as u8,
     );
+
+    let typ = match match config_get("type".to_string()) {
+        Ok(v) => v,
+        Err(_) => return Err(Error::msg("type not found")),
+    } {
+        Some(v) => v,
+        None => return Err(Error::msg("type not found")),
+    };
+
+    extism_pdk::log!(LogLevel::Info, "type: {}", typ);
 
     let data = match args.get("data") {
         Some(v) => v.as_str().unwrap(),

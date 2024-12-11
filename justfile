@@ -25,3 +25,6 @@ test:
 
   cd servlets/greet
   xtp plugin test
+
+  cd ../qr-code
+  xtp plugin test
