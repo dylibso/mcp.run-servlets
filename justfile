@@ -23,17 +23,9 @@ test:
   xtp plugin build --path test/host
   xtp plugin build --path test/testsuite
 
-  cd servlets/greet
-  xtp plugin test --log-level warn
-
-  cd ../qr-code
-  xtp plugin test --log-level warn
-
-  cd ../currency-converter
-  xtp plugin test --allow-host api.fxratesapi.com --log-level warn
-
-  cd ../eval_js
-  xtp plugin test --log-level warn
-
-  cd ../fetch
-  xtp plugin test --allow-host getxtp.com --log-level warn
+  for dir in servlets/*/; do
+    cd "$dir"
+    echo "Testing $dir"
+    xtp plugin test --allow-host api.fxratesapi.com --allow-host getxtp.com --log-level warn
+    cd ../..
+  done

@@ -48,4 +48,6 @@ jobs:
     - name: Publish all the servlets
       env:
         XTP_TOKEN: ${{ secrets.XTP_TOKEN }}
-      run: just push
+      run: |
+        just test
+        just push
