@@ -18,3 +18,10 @@ push:
     cd ../..
   done
 
+test:
+  #!/usr/bin/env sh
+  xtp plugin build --path test/host
+  xtp plugin build --path test/testsuite
+
+  cd servlets/greet
+  xtp plugin test --log-level debug

@@ -15,3 +15,14 @@ name = "greet"
 
   # xtp plugin init runs this script before running the format script
   prepare = "sh prepare.sh && npm install"
+
+[[test]]
+name = "basic"
+with = "../../test/testsuite/dist/test.wasm"
+mock_host = "../../test/host/dist/host.wasm"
+mock_input = { file = "mock_input.json" }
+
+# [[test]]
+# name = "no input"
+# with = "../../test/testsuite/dist/test.wasm"
+# mock_host = "../../test/host/dist/host.wasm"
