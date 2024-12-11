@@ -31,3 +31,6 @@ test:
 
   cd ../currency-converter
   xtp plugin test --allow-host api.fxratesapi.com --log-level warn
+
+  cd ../eval_js
+  xtp plugin test --log-level warn
