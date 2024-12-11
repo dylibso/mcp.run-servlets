@@ -326,12 +326,13 @@ export class ToolDescription {
 }
 
 /**
- * Get the configuration for the tool
+ * Get configuration values.
+ * Returns an empty string in case there is no value for a given key.
  *
  * @param {string} input - The config key
- * @returns {string | null} The config value for the given key, or empty if not found
+ * @returns {string} The config value for the given key, or empty if not found
  */
-export function config_get(input: string): string | null {
+export function config_get(input: string): string {
   const mem = Memory.fromString(input as string);
 
   const ptr = hostFunctions.config_get(mem.offset);
