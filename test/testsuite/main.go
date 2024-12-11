@@ -113,8 +113,8 @@ func testQRCode() {
 
 		xtptest.AssertEq("Tool call should not have errored", hasErrored, false)
 		xtptest.AssertEq("Tool call should have one content item", len(result.Content), 1)
-		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeText)
-		xtptest.Assert("Content text should start with `data:image/png;base64,`", result.Content[0].Text != nil && len(*result.Content[0].Text) > 0 && (*result.Content[0].Text)[:22] == "data:image/png;base64,", *result.Content[0].Text)
+		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeImage)
+		xtptest.AssertEq("MimeType should be image/png", *result.Content[0].MimeType, "image/png")
 	})
 }
 

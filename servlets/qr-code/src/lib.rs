@@ -2,7 +2,7 @@ mod pdk;
 
 use base64::Engine;
 use extism_pdk::*;
-use pdk::{config_get, types::*};
+use pdk::types::*;
 use qrcode_png::{Color, QrCode, QrCodeEcc};
 use serde_json::{json, Map, Value};
 
