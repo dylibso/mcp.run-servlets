@@ -31,7 +31,6 @@ pub(crate) fn call(input: CallToolRequest) -> Result<CallToolResult, Error> {
     let data = base64::engine::general_purpose::STANDARD.encode(b);
 
     Ok(CallToolResult {
-        _meta: Default::default(),
         is_error: None,
         content: vec![Content {
             annotations: None,
