@@ -38,9 +38,49 @@ func testToolCall(name string) {
 		testCurrencyConverter()
 	case "eval_js":
 		testEvalJS()
+	case "fetch":
+		testFetch()
 	default:
 		xtptest.Assert(fmt.Sprintf("Unable to test '%s'", name), false, "Unknown tool")
 	}
+}
+
+func testFetch() {
+	xtptest.Group("test fetch tool", func() {
+		pdk.Log(pdk.LogDebug, "Testing fetch tool")
+
+		arguments := map[string]interface{}{"url": "https://getxtp.com"}
+		input := CallToolRequest{
+			Method: nil,
+			Params: Params{
+				Arguments: &arguments,
+				Name:      "fetch",
+			},
+		}
+
+		inputBytes, err := input.Marshal()
+		if err != nil {
+			xtptest.Assert("Failed to marshal input", false, err.Error())
+		}
+
+		output := xtptest.CallBytes("call", inputBytes)
+		result, err := parseCallToolResult(output)
+		if err != nil {
+			xtptest.Assert("Failed to parse tool call result", false, err.Error())
+		}
+
+		pdk.Log(pdk.LogDebug, fmt.Sprintf("Tool call result: %v", string(output)))
+
+		hasErrored := result.IsError != nil && *result.IsError
+
+		xtptest.AssertEq("Tool call should not have errored", hasErrored, false)
+		xtptest.AssertEq("Tool call should have one content item", len(result.Content), 1)
+		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeText)
+
+		// test if the content contains the string "xtp", case-insensitive
+		regex := regexp.MustCompile(`(?i)xtp`)
+		xtptest.Assert("Content text should contain 'xtp'", regex.MatchString(*result.Content[0].Text), *result.Content[0].Text)
+	})
 }
 
 func testEvalJS() {

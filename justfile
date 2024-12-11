@@ -34,3 +34,6 @@ test:
 
   cd ../eval_js
   xtp plugin test --log-level warn
+
+  cd ../fetch
+  xtp plugin test --allow-host getxtp.com --log-level warn

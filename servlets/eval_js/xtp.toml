@@ -17,6 +17,6 @@ name = "eval_js"
   prepare = "sh prepare.sh && npm install"
 
 [[test]]
-name = "no input"
+name = "basic tests"
 with = "../../test/testsuite/dist/test.wasm"
 mock_host = "../../test/host/dist/host.wasm"

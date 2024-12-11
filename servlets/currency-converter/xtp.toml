@@ -18,6 +18,6 @@ name = "currency-converter"
 
 
 [[test]]
-name = "no input"
+name = "basic tests"
 with = "../../test/testsuite/dist/test.wasm"
 mock_host = "../../test/host/dist/host.wasm"
