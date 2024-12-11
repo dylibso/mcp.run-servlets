@@ -17,10 +17,15 @@ func config_get(key uint64) uint64 {
 	keyMem := pdk.FindMemory(key)
 	k := string(keyMem.ReadBytes())
 
+	emptyString, err := pdk.AllocateJSON("")
+	if err != nil {
+		panic(err)
+	}
+
 	v, ok := input.Config[k]
 	if !ok {
 		pdk.Log(pdk.LogDebug, fmt.Sprintf("config_get: key %s not found", k))
-		return 0
+		return emptyString.Offset()
 	}
 
 	pdk.Log(pdk.LogDebug, fmt.Sprintf("config_get: key %s found => %s", k, v))
@@ -28,7 +33,7 @@ func config_get(key uint64) uint64 {
 	output, err := json.Marshal(v)
 	if err != nil {
 		pdk.Log(pdk.LogError, fmt.Sprintf("config_get: failed to marshal value %s", v))
-		return 0
+		return emptyString.Offset()
 	}
 
 	valMem := pdk.AllocateBytes(output)
