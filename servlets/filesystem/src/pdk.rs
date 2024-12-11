@@ -321,16 +321,17 @@ mod raw_imports {
     #[host_fn]
     extern "ExtismHost" {
 
-        pub(crate) fn config_get(input: String) -> Json<Option<String>>;
+        pub(crate) fn config_get(input: String) -> Json<String>;
 
     }
 }
 
-/// config_get Get the configuration for the tool
+/// config_get Get configuration values.
+/// Returns an empty string in case there is no value for a given key.
 /// It takes input of String (The config key)
-/// And it returns an output Option<String> (The config value for the given key, or empty if not found)
+/// And it returns an output String (The config value for the given key, or empty if not found)
 #[allow(unused)]
-pub(crate) fn config_get(input: String) -> std::result::Result<Option<String>, extism_pdk::Error> {
+pub(crate) fn config_get(input: String) -> std::result::Result<String, extism_pdk::Error> {
     let res = unsafe { raw_imports::config_get(input)? };
 
     let extism_pdk::Json(res) = res;
