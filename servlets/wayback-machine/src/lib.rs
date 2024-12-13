@@ -37,7 +37,7 @@ pub(crate) fn describe() -> Result<types::ToolDescription, Error> {
                      and returns the snapshots that are available".into(),
         input_schema: json!({
             "type": "object",
-            "required": ["name"],
+            "required" : ["url"],
             "properties": {
                 "url": {
                     "type": "string",
@@ -49,7 +49,6 @@ pub(crate) fn describe() -> Result<types::ToolDescription, Error> {
                     timestamp=20060101 would return the closest snapshot to January 1, 2006. You can omit any parts of the timestamp,
                     ex: timestamp=2006 would return the closest snapshot to January 1, 2006."
                 },
-                "required" : ["url"]
             }
         })
             .as_object()
