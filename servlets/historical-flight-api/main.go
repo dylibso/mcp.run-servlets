@@ -85,14 +85,14 @@ func loadBasicAuthToken() error {
 		return nil
 	}
 
-	user, uok := ConfigGet("username")
-	pass, pok := ConfigGet("password")
-	if uok != nil || pok != nil {
+	user, uok := pdk.GetConfig("username")
+	pass, pok := pdk.GetConfig("password")
+	if !uok || !pok {
 		return errors.New("username or password not set")
 	}
-	basicAuthToken = base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", *user, *pass)))
+	basicAuthToken = base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", user, pass)))
 
-	auth := *user + ":" + *pass
+	auth := user + ":" + pass
 	basicAuthToken = "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
 	return nil
 }
