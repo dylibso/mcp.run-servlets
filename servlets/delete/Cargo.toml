@@ -1,5 +1,5 @@
 [package]
-name = "qr-code"
+name = "delete"
 version = "0.1.0"
 edition = "2021"
 
@@ -14,6 +14,5 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 base64-serde = "0.7"
 base64 = "0.21"
-qrcode-png = "0.4.1"
 
 [workspace]
