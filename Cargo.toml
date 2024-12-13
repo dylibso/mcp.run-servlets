@@ -1,0 +1,2 @@
+[workspace]
+members = ["servlets/qr-code"]

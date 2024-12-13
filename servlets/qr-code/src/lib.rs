@@ -8,6 +8,11 @@ use serde_json::{json, Map, Value};
 
 // Called when the tool is invoked.
 pub(crate) fn call(input: CallToolRequest) -> Result<CallToolResult, Error> {
+    extism_pdk::log!(
+        LogLevel::Info,
+        "called with args: {:?}",
+        input.params.arguments
+    );
     let args = input.params.arguments.unwrap_or_default();
     let ecc = to_ecc(
         args.get("ecc")
@@ -31,7 +36,6 @@ pub(crate) fn call(input: CallToolRequest) -> Result<CallToolResult, Error> {
     let data = base64::engine::general_purpose::STANDARD.encode(b);
 
     Ok(CallToolResult {
-        _meta: Default::default(),
         is_error: None,
         content: vec![Content {
             annotations: None,
@@ -52,7 +56,7 @@ fn to_ecc(num: u8) -> QrCodeEcc {
 }
 
 // Called by mcpx to understand how and why to use this tool
-pub(crate) fn describe() -> Result<ToolDescription, Error> {
+pub(crate) fn describe() -> Result<ListToolsResult, Error> {
     /*
     {
         name: "qr_as_png",
@@ -107,10 +111,12 @@ pub(crate) fn describe() -> Result<ToolDescription, Error> {
     schema.insert("properties".into(), Value::Object(props));
     schema.insert("required".into(), Value::Array(vec!["data".into()]));
 
-    Ok(ToolDescription {
-        name: "qr-code".into(),
-        description: "Convert data like a message or URL to a QR code (resulting in a PNG file)"
-            .into(),
-        input_schema: schema,
+    Ok(ListToolsResult {
+        tools: vec![ToolDescription {
+            name: "qr-code".into(),
+            description:
+                "Convert data like a message or URL to a QR code (resulting in a PNG file)".into(),
+            input_schema: schema,
+        }],
     })
 }
