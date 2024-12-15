@@ -140,8 +140,6 @@ func fetchImage(aircraftResponse []byte) []byte {
 	return nil
 }
 
-// Called by mcpx to understand how and why to use this tool
-// And returns ToolDescription (The tool's description)
 func Describe() (ListToolsResult, error) {
 	return ListToolsResult{Tools: []ToolDescription{{
 		Name:        "historical-flight-api",
