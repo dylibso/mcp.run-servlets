@@ -148,14 +148,17 @@ func Describe() (ListToolsResult, error) {
 		Description: "Get the flight arrivals and departures for a given airport by ICAO identifier within a given time range; or get the details and picture of a flight by callsign and ICAO24 hex code.",
 		InputSchema: map[string]interface{}{
 			"type": "object",
+			"properties": map[string]interface{}{
+				"requestType": map[string]interface{}{
+					"type":        "string",
+					"description": "The type of the request, either 'departure' or 'arrival'",
+				},
+			},
+			"required": []string{"requestType"},
 			"oneOf": []interface{}{
 				map[string]interface{}{
 					"type": "object",
 					"properties": map[string]interface{}{
-						"requestType": map[string]interface{}{
-							"type":        "string",
-							"description": "The type of the request, either 'departure' or 'arrival'",
-						},
 						"airport": map[string]interface{}{
 							"type":        "string",
 							"description": "The ICAO identifier of the airport",
@@ -169,7 +172,7 @@ func Describe() (ListToolsResult, error) {
 							"description": "The end of the time range as a UNIX timestamp in UTC",
 						},
 					},
-					"required": []string{"requestType", "airport", "begin", "end"},
+					"required": []string{"airport", "begin", "end"},
 				},
 				map[string]interface{}{
 					"type": "object",
