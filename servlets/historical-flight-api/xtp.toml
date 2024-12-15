@@ -11,7 +11,7 @@ name = "historical-flight-api"
   build = "mkdir -p dist && tinygo build -target wasi -o dist/plugin.wasm ."
 
   # xtp plugin init runs this script to format the plugin code
-  format = "go fmt"
+  format = "go fmt && go mod tidy && goimports -w main.go"
 
   # xtp plugin init runs this script before running the format script
   prepare = "sh prepare.sh && go get ./..."

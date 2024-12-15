@@ -58,9 +58,6 @@ func _Describe() int32 {
 	return 0
 }
 
-//go:wasmimport extism:host/user config_get
-func _ConfigGet(uint64) uint64
-
 //
 type BlobResourceContents struct {
 	// A base64-encoded string representing the binary data of the item.
@@ -144,6 +141,12 @@ func stringToContentType(s string) (ContentType, error) {
 	}
 }
 
+// Provides one or more descriptions of the tools available in this servlet.
+type ListToolsResult struct {
+	// The list of ToolDescription objects provided by this servlet.
+	Tools []ToolDescription `json:"tools"`
+}
+
 //
 type Params struct {
 	Arguments interface{} `json:"arguments,omitempty"`
@@ -204,7 +207,7 @@ type TextResourceContents struct {
 	Uri string `json:"uri"`
 }
 
-// Tells mcpx
+// Describes the capabilities and expected paramters of the tool function
 type ToolDescription struct {
 	// A description of the tool
 	Description string `json:"description"`
@@ -212,25 +215,6 @@ type ToolDescription struct {
 	InputSchema interface{} `json:"inputSchema"`
 	// The name of the tool. It should match the plugin / binding name.
 	Name string `json:"name"`
-}
-
-// ConfigGet Get the configuration for the tool
-// It takes input of string (The config key)
-// And it returns an output *string (The config value for the given key, or empty if not found)
-func ConfigGet(input string) (*string, error) {
-	var err error
-	_ = err
-	mem := pdk.AllocateString(input)
-
-	offs := _ConfigGet(mem.Offset())
-
-	var out string
-	err = pdk.JSONFrom(offs, &out)
-	if err != nil {
-		return nil, err
-	}
-	return &out, nil
-
 }
 
 // Note: leave this in place, as the Go compiler will find the `export` function as the entrypoint.

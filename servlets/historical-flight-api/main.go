@@ -142,9 +142,9 @@ func fetchImage(aircraftResponse []byte) []byte {
 
 // Called by mcpx to understand how and why to use this tool
 // And returns ToolDescription (The tool's description)
-func Describe() (ToolDescription, error) {
-	return ToolDescription{
-		Name:        "flight-api",
+func Describe() (ListToolsResult, error) {
+	return ListToolsResult{Tools: []ToolDescription{{
+		Name:        "historical-flight-api",
 		Description: "Get the flight arrivals and departures for a given airport by ICAO identifier within a given time range; or get the details and picture of a flight by callsign and ICAO24 hex code.",
 		InputSchema: map[string]interface{}{
 			"type": "object",
@@ -187,7 +187,7 @@ func Describe() (ToolDescription, error) {
 				},
 			},
 		},
-	}, nil
+	}}}, nil
 }
 
 // box the value to return a nil-able reference

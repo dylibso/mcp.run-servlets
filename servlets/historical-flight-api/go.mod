@@ -1,4 +1,4 @@
-module flight-api
+module historical-flight-api
 
 go 1.22.1
 
