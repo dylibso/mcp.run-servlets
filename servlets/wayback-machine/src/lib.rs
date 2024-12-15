@@ -1,10 +1,11 @@
 mod pdk;
 
 use extism_pdk::*;
-use pdk::types::{CallToolResult, Content, ContentType, ToolDescription};
+use pdk::types::{CallToolResult, Content, ContentType, ListToolsResult};
 use pdk::*;
 use query_string_builder::QueryString;
 use serde_json::json;
+use types::ToolDescription;
 
 // Called when the tool is invoked.
 pub(crate) fn call(request: types::CallToolRequest) -> Result<types::CallToolResult, Error> {
@@ -30,8 +31,9 @@ pub(crate) fn call(request: types::CallToolRequest) -> Result<types::CallToolRes
 
 // Called by mcpx to understand how and why to use this tool.
 // Note: these imports are NOT available in this context: config_get
-pub(crate) fn describe() -> Result<types::ToolDescription, Error> {
-    Ok(ToolDescription {
+pub(crate) fn describe() -> Result<ListToolsResult, Error> {
+    Ok(ListToolsResult{
+        tools: vec![ToolDescription {
         name: "wayback-machine".into(),
         description: "Looks up a URL on the Wayback Machine \
                      and returns the snapshots that are available".into(),
@@ -54,5 +56,5 @@ pub(crate) fn describe() -> Result<types::ToolDescription, Error> {
             .as_object()
             .unwrap()
             .clone(),
-    })
+    }]})
 }

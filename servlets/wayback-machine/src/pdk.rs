@@ -211,6 +211,22 @@ pub mod types {
         extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
+    pub struct ListToolsResult {
+        /// The list of ToolDescription objects provided by this servlet.
+        #[serde(rename = "tools")]
+        pub tools: Vec<types::ToolDescription>,
+    }
+
+    #[derive(
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
+    )]
+    #[encoding(Json)]
     pub struct Params {
         #[serde(rename = "arguments")]
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -319,21 +335,5 @@ pub mod types {
 mod raw_imports {
     use super::*;
     #[host_fn]
-    extern "ExtismHost" {
-
-        pub(crate) fn config_get(input: String) -> Json<String>;
-
-    }
-}
-
-/// config_get Get the configuration for the tool
-/// It takes input of String (The config key)
-/// And it returns an output String (The config value for the given key, or empty if not found)
-#[allow(unused)]
-pub(crate) fn config_get(input: String) -> std::result::Result<String, extism_pdk::Error> {
-    let res = unsafe { raw_imports::config_get(input)? };
-
-    let extism_pdk::Json(res) = res;
-
-    Ok(res)
+    extern "ExtismHost" {}
 }
