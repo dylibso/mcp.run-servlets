@@ -18,3 +18,13 @@ push:
     cd ../..
   done
 
+test:
+  #!/usr/bin/env sh
+  xtp plugin build --path test/testsuite
+
+  for dir in servlets/*/; do
+    cd "$dir"
+    echo "Testing $dir"
+    xtp plugin test --allow-host '*' --log-level warn
+    cd ../..
+  done

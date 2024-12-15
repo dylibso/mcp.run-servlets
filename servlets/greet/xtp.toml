@@ -15,3 +15,7 @@ name = "greet"
 
   # xtp plugin init runs this script before running the format script
   prepare = "sh prepare.sh && npm install"
+
+[[test]]
+name = "basic tests"
+with = "../../test/testsuite/dist/test.wasm"
