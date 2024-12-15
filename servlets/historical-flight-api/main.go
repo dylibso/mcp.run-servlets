@@ -151,7 +151,7 @@ func Describe() (ListToolsResult, error) {
 			"properties": map[string]interface{}{
 				"requestType": map[string]interface{}{
 					"type":        "string",
-					"description": "The type of the request, either 'departure' or 'arrival'",
+					"description": "The type of the request, 'departure', 'arrival' or 'aircraft'",
 				},
 			},
 			"required": []string{"requestType"},
