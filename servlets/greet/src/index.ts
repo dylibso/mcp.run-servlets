@@ -3,8 +3,15 @@ import * as main from "./main";
 import { CallToolRequest, CallToolResult, ToolDescription } from "./pdk";
 
 export function call(): number {
-  const untypedInput = JSON.parse(Host.inputString());
-  const input = CallToolRequest.fromJson(untypedInput);
+  const jsonInput = Host.inputString();
+  
+  let input;
+  if (jsonInput) {
+    const untypedInput = JSON.parse(jsonInput);
+    input = CallToolRequest.fromJson(untypedInput);
+  } else {
+    input = new CallToolRequest();
+  }
 
   const output = main.callImpl(input);
 

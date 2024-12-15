@@ -337,5 +337,15 @@ export function config_get(input: string): string {
 
   const ptr = hostFunctions.config_get(mem.offset);
 
-  return Memory.find(ptr).readJsonObject();
+  const outputMemory = Memory.find(ptr);
+  if (isEmpty(outputMemory)) {
+    // @ts-expect-error TS2322
+    return null;
+  }
+
+  return outputMemory.readJsonObject();
+}
+
+function isEmpty(mem: MemoryHandle | undefined): boolean {
+  return !mem || mem.len === BigInt(0) || !mem.offset;
 }
