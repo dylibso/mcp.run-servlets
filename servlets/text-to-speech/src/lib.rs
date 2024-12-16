@@ -37,8 +37,8 @@ pub(crate) fn call(input: types::CallToolRequest) -> Result<types::CallToolResul
         let mut c = Content::default();
         c.text = Some(
             serde_json::json!({
-            "status_code": res.status_code(),
-            "message": String::from_utf8(audio)?
+                "status_code": res.status_code(),
+                "message": String::from_utf8(audio)?
             })
             .to_string(),
         );
@@ -48,7 +48,7 @@ pub(crate) fn call(input: types::CallToolRequest) -> Result<types::CallToolResul
     }
 
     let now = chrono::Local::now();
-    let output = format!("text-to-speech-output.{}.mp3", now.timestamp());
+    let output = format!("/tmp/text-to-speech.{}.mp3", now.timestamp());
     std::fs::write(&output, audio)?;
     let mut c = Content::default();
     c.text = Some(output);
