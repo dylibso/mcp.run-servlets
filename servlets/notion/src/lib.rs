@@ -28,10 +28,10 @@ fn make_notion_request(
 
     let response = http::request(&request, body_bytes.as_deref())?;
 
-    if response.status() < 200 || response.status() >= 300 {
+    if response.status_code() < 200 || response.status_code() >= 300 {
         return Err(Error::msg(format!(
             "Notion API error: {} - {}",
-            response.status(),
+            response.status_code(),
             String::from_utf8_lossy(&response.body())
         )));
     }
