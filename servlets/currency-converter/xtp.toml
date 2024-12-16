@@ -15,3 +15,8 @@ name = "currency-converter"
 
   # xtp plugin init runs this script before running the format script
   prepare = "make wasisdk"
+
+
+[[test]]
+name = "basic tests"
+with = "../../test/testsuite/dist/test.wasm"
