@@ -37,10 +37,7 @@ A Model Context Protocol (MCP) tool for interacting with the Notion API. This to
 
 1. Create a Notion integration at https://www.notion.so/my-integrations
 2. Get your integration token
-3. Configure the token in MCP:
-```bash
-mcpx config set NOTION_TOKEN "your-integration-token"
-```
+3. Set the NOTION_TOKEN at the installation step
 
 ## Usage
 
