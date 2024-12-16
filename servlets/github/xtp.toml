@@ -8,10 +8,10 @@ name = "github"
 [scripts]
 
   # xtp plugin build runs this script to generate the wasm file
-  build = "bash prepare.sh && npm run build"
+  build = "mkdir -p dist && tinygo build -target wasi -o dist/plugin.wasm ."
 
   # xtp plugin init runs this script to format the plugin code
-  format = "npm run format"
+  format = "go fmt && go mod tidy && goimports -w main.go"
 
   # xtp plugin init runs this script before running the format script
-  prepare = "bash prepare.sh"
+  prepare = "sh prepare.sh && go get ./..."

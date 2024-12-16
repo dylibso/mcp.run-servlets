@@ -7,81 +7,66 @@ command_exists () {
 
 missing_deps=0
 
-# Check for Node.js
-if ! (command_exists node || command_exists nodejs); then
+# Check for Go
+if ! (command_exists go); then
   missing_deps=1
-  echo "❌ Node.js is not installed."
+  echo "❌ Go (supported version between 1.18 - 1.22) is not installed."
   echo ""
-  echo "To install Node.js, visit the official download page:"
-  echo "👉 https://nodejs.org/en/download/"
+  echo "To install Go, visit the official download page:"
+  echo "👉 https://go.dev/dl/"
   echo ""
   echo "Or install it using a package manager:"
   echo ""
   echo "🔹 macOS (Homebrew):"
-  echo "    brew install node"
+  echo "    brew install go"
   echo ""
   echo "🔹 Ubuntu/Debian:"
-  echo "    curl -fsSL https://deb.nodesource.com/setup_current.x | sudo -E bash -"
-  echo "    sudo apt-get install -y nodejs"
-  echo ""
-  echo "🔹 CentOS/RHEL:"
-  echo "    curl -fsSL https://rpm.nodesource.com/setup_current.x | sudo bash -"
-  echo "    sudo yum install -y nodejs"
+  echo "    sudo apt-get -y install golang-go"
   echo ""
   echo "🔹 Arch Linux:"
-  echo "    sudo pacman -S nodejs"
+  echo "    sudo pacman -S go"
   echo ""
 fi
 
-# Check for npm
-if ! command_exists npm; then
+# Check for the right version of Go, needed by TinyGo (supports go 1.18 - 1.22)
+if (command_exists go); then
+  compat=0
+  for v in `seq 18 22`; do
+    if (go version | grep -q "go1.$v"); then
+      compat=1
+    fi
+  done
+
+  if [ $compat -eq 0 ]; then
+    echo "❌ Supported Go version is not installed. Must be Go 1.18 - 1.22."
+    echo ""
+  fi
+fi
+
+
+ARCH=$(arch)
+
+# Check for TinyGo
+if ! (command_exists tinygo); then
   missing_deps=1
-  echo "❌ npm is not installed."
+  echo "❌ TinyGo is not installed."
   echo ""
-  echo "npm typically comes with Node.js. Please install Node.js to get npm."
+  echo "To install TinyGo, visit the official download page:"
+  echo "👉 https://tinygo.org/getting-started/install/"
   echo ""
-  echo "Alternatively, install npm using a package manager:"
+  echo "Or install it using a package manager:"
   echo ""
   echo "🔹 macOS (Homebrew):"
-  echo "    brew install npm"
+  echo "    brew tap tinygo-org/tools"
+  echo "    brew install tinygo"
   echo ""
   echo "🔹 Ubuntu/Debian:"
-  echo "    sudo apt-get install npm"
-  echo ""
-  echo "🔹 CentOS/RHEL:"
-  echo "    sudo yum install npm"
+  echo "    wget https://github.com/tinygo-org/tinygo/releases/download/v0.31.2/tinygo_0.31.2_$ARCH.deb"
+  echo "    sudo dpkg -i tinygo_0.31.2_$ARCH.deb"
   echo ""
   echo "🔹 Arch Linux:"
-  echo "    sudo pacman -S npm"
+  echo "    pacman -S extra/tinygo"
   echo ""
 fi
 
-# Exit with a bad exit code if any dependencies are missing
-if [ "$missing_deps" -ne 0 ]; then
-  echo "Install the missing dependencies and ensure they are on your path. Then run this command again."
-  # TODO: remove sleep when cli bug is fixed
-  sleep 2
-  exit 1
-fi
-
-# Check for extism-js
-if ! command_exists extism-js; then
-  echo "❌ extism-js is not installed."
-  echo ""
-  echo "extism-js is needed to compile the plug-in. You can find the instructions to install it here: https://github.com/extism/js-pdk"
-  echo ""
-  echo "Alternatively, you can use an install script."
-  echo ""
-  echo "🔹 Mac / Linux:"
-  echo "curl -L https://raw.githubusercontent.com/extism/js-pdk/main/install.sh | bash"
-  echo ""
-  echo "🔹 Windows:"
-  echo "powershell Invoke-WebRequest -Uri https://raw.githubusercontent.com/extism/js-pdk/main/install-windows.ps1 -OutFile install-windows.ps1"
-  echo "powershell -executionpolicy bypass -File .\install-windows.ps1"
-  echo ""
-  # TODO: remove sleep when cli bug is fixed
-  sleep 2
-  exit 1
-fi
-
-npm install
+go install golang.org/x/tools/cmd/goimports@latest
