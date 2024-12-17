@@ -107,9 +107,9 @@ func some[T any](t T) *T {
 }
 
 type SchemaProperty struct {
-	Type        string          `json:"type"`
-	Description string          `json:"description,omitempty"`
-	Items       *SchemaProperty `json:"items,omitempty"`
+	Type        string  `json:"type"`
+	Description string  `json:"description,omitempty"`
+	Items       *schema `json:"items,omitempty"`
 }
 
 func prop(tpe, description string) SchemaProperty {
@@ -117,7 +117,7 @@ func prop(tpe, description string) SchemaProperty {
 }
 
 func arrprop(tpe, description, itemstpe string) SchemaProperty {
-	items := SchemaProperty{Type: itemstpe}
+	items := schema{"type": itemstpe}
 	return SchemaProperty{Type: tpe, Description: description, Items: &items}
 }
 
