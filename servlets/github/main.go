@@ -63,6 +63,23 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 		path, _ := args["path"].(string)
 		file := fileFromArgs(args)
 		return filesCreateOrUpdate(apiKey, owner, repo, path, file)
+
+	case CreateBranchTool.Name:
+		owner, _ := args["owner"].(string)
+		repo, _ := args["repo"].(string)
+		from, _ := args["branch"].(string)
+		var maybeBranch *string
+		if branch, ok := args["from_branch"].(string); ok {
+			maybeBranch = &branch
+		}
+		return branchCreate(apiKey, owner, repo, from, maybeBranch), nil
+
+	case CreatePullRequestTool.Name:
+		owner, _ := args["owner"].(string)
+		repo, _ := args["repo"].(string)
+		pr := branchPullRequestSchemaFromArgs(args)
+		return branchCreatePullRequest(apiKey, owner, repo, pr), nil
+
 	default:
 		return CallToolResult{
 			IsError: some(true),
@@ -81,7 +98,7 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 // And returns ListToolsResult (The tools' descriptions, supporting multiple tools from a single servlet.)
 func Describe() (ListToolsResult, error) {
 	return ListToolsResult{
-		Tools: append(IssueTools, FileTools...),
+		Tools: append(IssueTools, append(FileTools, BranchTools...)...),
 	}, nil
 }
 
