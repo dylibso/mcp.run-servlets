@@ -1,8 +1,8 @@
-name: Build and Push
+name: CI
 
 on:
-  push:
-    branches: [ "main" ] 
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -51,8 +51,3 @@ jobs:
       run: |
         just build
         just test
-
-    - name: Publish all the servlets
-      env:
-        XTP_TOKEN: ${{ secrets.XTP_TOKEN }}
-      run: just push
