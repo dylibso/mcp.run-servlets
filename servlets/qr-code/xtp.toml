@@ -1,7 +1,7 @@
 app_id = "app_01je4dgpcyfvgrz8f1ys3pbxas"
 
 # This is where 'xtp plugin push' expects to find the wasm file after the build script has run.
-bin = "../../target/wasm32-wasip1/release/plugin.wasm" # when we are in a cargo workspace, bins are in root/target
+bin = "target/wasm32-wasip1/release/plugin.wasm"
 extension_point_id = "ext_01je4jj1tteaktf0zd0anm8854"
 # This is the 'binding' name used for the plugin.
 name = "qr-code"
