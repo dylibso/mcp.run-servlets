@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eou pipefail
 
 # Function to check if a command exists
 command_exists () {
@@ -43,6 +44,14 @@ if (command_exists go); then
   fi
 fi
 
+# Exit with a bad exit code if any dependencies are missing
+if [ "$missing_deps" -ne 0 ]; then
+  echo "Install the missing dependencies and ensure they are on your path. Then run this command again."
+  # TODO: remove sleep when cli bug is fixed
+  sleep 2
+  exit 1
+fi
+
 
 ARCH=$(arch)
 
@@ -70,3 +79,11 @@ if ! (command_exists tinygo); then
 fi
 
 go install golang.org/x/tools/cmd/goimports@latest
+
+# Exit with a bad exit code if any dependencies are missing
+if [ "$missing_deps" -ne 0 ]; then
+  echo "Install the missing dependencies and ensure they are on your path. Then run this command again."
+  # TODO: remove sleep when cli bug is fixed
+  sleep 2
+  exit 1
+fi
