@@ -12,7 +12,7 @@ class SlackClient {
     this.teamId = teamId;
   }
 
-  getChannels(limit: number = 100, cursor?: string): any {
+  getChannels(limit: number = 100, cursor?: string): string {
     const params = new URLSearchParams({
       types: "public_channel",
       exclude_archived: "true",
@@ -30,7 +30,52 @@ class SlackClient {
     }).body
   }
 
-  getChannelHistory(channel_id: string, limit: number = 10): any {
+  postMessage(channel_id: string, text: string): string {
+    return Http.request({
+      url: "https://slack.com/api/chat.postMessage",
+      method: "POST",
+      headers: this.botHeaders,
+    }, JSON.stringify({
+      channel: channel_id,
+      text: text,
+    })).body
+  }
+
+  postReply(
+    channel_id: string,
+    thread_ts: string,
+    text: string,
+  ): string {
+    return Http.request({
+      url:"https://slack.com/api/chat.postMessage",
+      method: "POST",
+      headers: this.botHeaders,
+    }, JSON.stringify({
+        channel: channel_id,
+        thread_ts: thread_ts,
+        text: text,
+      })
+    ).body
+  }
+
+  addReaction(
+    channel_id: string,
+    timestamp: string,
+    reaction: string,
+  ): string {
+    return Http.request({
+      url: "https://slack.com/api/reactions.add",
+      method: "POST",
+      headers: this.botHeaders,
+    }, JSON.stringify({
+        channel: channel_id,
+        timestamp: timestamp,
+        name: reaction,
+      })
+    ).body
+  }
+
+  getChannelHistory(channel_id: string, limit: number = 10): string {
     const params = new URLSearchParams({
       channel: channel_id,
       limit: limit.toString(),
@@ -42,7 +87,20 @@ class SlackClient {
     }).body
   }
 
-  getUsers(limit: number = 100, cursor?: string): any {
+  getThreadReplies(channel_id: string, thread_ts: string): string {
+    const params = new URLSearchParams({
+      channel: channel_id,
+      ts: thread_ts,
+    });
+
+    return Http.request({
+      url: `https://slack.com/api/conversations.replies?${params}`,
+      headers: this.botHeaders
+    },
+    ).body;
+  }
+
+  getUsers(limit: number = 100, cursor?: string): string {
     const params = new URLSearchParams({
       limit: Math.min(limit, 200).toString(),
       team_id: this.teamId,
@@ -54,6 +112,18 @@ class SlackClient {
 
     return Http.request({
       url: `https://slack.com/api/users.list?${params}`,
+      headers: this.botHeaders
+    }).body
+  }
+
+  getUserProfile(user_id: string): string {
+    const params = new URLSearchParams({
+      user: user_id,
+      include_labels: "true",
+    });
+
+    return Http.request({
+      url: `https://slack.com/api/users.profile.get?${params}`,
       headers: this.botHeaders
     }).body
   }
@@ -90,19 +160,49 @@ export function callImpl(input: CallToolRequest): CallToolResult {
   }
   const slackClient = new SlackClient(botToken as string, teamId as string);
 
-  let text = 'unset response'
+  let contentText = 'unset response'
   if (input.params.name === 'slack_list_channels') {
     const {cursor, limit} = input.params.arguments || {}
-    text = slackClient.getChannels(limit, cursor)
+    contentText = slackClient.getChannels(limit, cursor)
+  } else if (input.params.name === 'slack_post_message') {
+    const {channel_id, text } = input.params.arguments || {}
+    if (!channel_id || !text) {
+      return ErrorContent('channel_id or text is missing')
+    }
+    contentText = slackClient.postMessage(channel_id, text)
+  } else if (input.params.name === 'slack_reply_to_thread') {
+    const {channel_id, thread_ts, text } = input.params.arguments || {}
+    if (!channel_id || !thread_ts || !text) {
+      return ErrorContent('channel_id or thread_ts or text is missing')
+    }
+    contentText = slackClient.postReply(channel_id, thread_ts, text)
+  } else if (input.params.name === 'slack_add_reaction') {
+    const {channel_id, timestamp, reaction} = input.params.arguments || {}
+    if (!channel_id || !timestamp || !reaction) {
+      return ErrorContent('channel_id or timestamp or reaction is missing')
+    }
+    contentText = slackClient.addReaction(channel_id, timestamp, reaction)
   } else if (input.params.name === 'slack_get_channel_history') {
     const { channel_id, limit } = input.params.arguments || {}
     if (!channel_id) {
       return ErrorContent('channel_id not provided')
     }
-    text = slackClient.getChannelHistory(channel_id, limit);
+    contentText = slackClient.getChannelHistory(channel_id, limit);
+  } else if (input.params.name === 'slack_get_thread_replies') {
+    const {channel_id, thread_ts} = input.params.arguments || {}
+    if (!channel_id || !thread_ts) {
+      return ErrorContent('channel_id or thread_ts is missing')
+    }
+    contentText = slackClient.getThreadReplies(channel_id, thread_ts)
   } else if (input.params.name === 'slack_get_users') {
     const {cursor, limit} = input.params.arguments || {}
-    text = slackClient.getUsers(limit, cursor)
+    contentText = slackClient.getUsers(limit, cursor)
+  } else if (input.params.name === 'slack_get_user_profile') {
+    const user_id = input.params.arguments?.user_id
+    if (!user_id) {
+      return ErrorContent('user_id is missing')
+    }
+    contentText = slackClient.getUserProfile(user_id)
   } else {
     return ErrorContent(`Unknown command ${input.params.name}`);
   }
@@ -110,7 +210,7 @@ export function callImpl(input: CallToolRequest): CallToolResult {
   return {
     content: [
       {
-        text: text,
+        text: contentText,
         type: ContentType.Text
       },
     ]
@@ -145,6 +245,71 @@ export function describeImpl(): ListToolsResult {
     },
   };
 
+  const postMessageTool: ToolDescription = {
+    name: "slack_post_message",
+    description: "Post a new message to a Slack channel",
+    inputSchema: {
+      type: "object",
+      properties: {
+        channel_id: {
+          type: "string",
+          description: "The ID of the channel to post to",
+        },
+        text: {
+          type: "string",
+          description: "The message text to post",
+        },
+      },
+      required: ["channel_id", "text"],
+    },
+  };
+
+  const replyToThreadTool: ToolDescription = {
+    name: "slack_reply_to_thread",
+    description: "Reply to a specific message thread in Slack",
+    inputSchema: {
+      type: "object",
+      properties: {
+        channel_id: {
+          type: "string",
+          description: "The ID of the channel containing the thread",
+        },
+        thread_ts: {
+          type: "string",
+          description: "The timestamp of the parent message",
+        },
+        text: {
+          type: "string",
+          description: "The reply text",
+        },
+      },
+      required: ["channel_id", "thread_ts", "text"],
+    },
+  };
+
+  const addReactionTool: ToolDescription = {
+    name: "slack_add_reaction",
+    description: "Add a reaction emoji to a message",
+    inputSchema: {
+      type: "object",
+      properties: {
+        channel_id: {
+          type: "string",
+          description: "The ID of the channel containing the message",
+        },
+        timestamp: {
+          type: "string",
+          description: "The timestamp of the message to react to",
+        },
+        reaction: {
+          type: "string",
+          description: "The name of the emoji reaction (without ::)",
+        },
+      },
+      required: ["channel_id", "timestamp", "reaction"],
+    },
+  };
+
   const getChannelHistoryTool: ToolDescription = {
     name: "slack_get_channel_history",
     description: "Get recent messages from a channel. The names of the 'U' ids are available with slack_get_users",
@@ -162,6 +327,25 @@ export function describeImpl(): ListToolsResult {
         },
       },
       required: ["channel_id"],
+    },
+  };
+
+  const getThreadRepliesTool: ToolDescription = {
+    name: "slack_get_thread_replies",
+    description: "Get all replies in a message thread",
+    inputSchema: {
+      type: "object",
+      properties: {
+        channel_id: {
+          type: "string",
+          description: "The ID of the channel containing the thread",
+        },
+        thread_ts: {
+          type: "string",
+          description: "The timestamp of the parent message",
+        },
+      },
+      required: ["channel_id", "thread_ts"],
     },
   };
 
@@ -185,7 +369,22 @@ export function describeImpl(): ListToolsResult {
     },
   };
 
+  const getUserProfileTool: ToolDescription = {
+    name: "slack_get_user_profile",
+    description: "Get detailed profile information for a specific user",
+    inputSchema: {
+      type: "object",
+      properties: {
+        user_id: {
+          type: "string",
+          description: "The ID of the user",
+        },
+      },
+      required: ["user_id"],
+    },
+  };
+
   return {
-    tools: [listChannelsTool, getChannelHistoryTool, getUsersTool]
+    tools: [listChannelsTool, postMessageTool, replyToThreadTool, addReactionTool, getChannelHistoryTool, getThreadRepliesTool, getUsersTool, getUserProfileTool]
   };
 }
