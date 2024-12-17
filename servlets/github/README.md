@@ -2,9 +2,23 @@
 
 Currently supported: 
 
-- Create issues
-- Read the contents of an issue
-- Add comments to an issue
+Issues: 
+
+- `gh-get-issue` Create issues
+- `gh-add-issue-comment` Read the contents of an issue
+- `gh-update-issue` Add comments to an issue
+
+Files:
+
+- `gh-get-file-contents` Get contents and metadata about a file on a branch
+- `gh-create-or-update-file` Create or a update a file on a branch
+- `gh-push-files` Bulk push files to a branch
+
+Branches: 
+
+- `gh-create-branch` Create a new branch
+- `gh-create-pull-request` Createa a PR from a branch
+
 
 
 ## Config

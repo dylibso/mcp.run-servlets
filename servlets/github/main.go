@@ -55,13 +55,13 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 		repo, _ := args["repo"].(string)
 		path, _ := args["path"].(string)
 		branch, _ := args["branch"].(string)
-		res, _ := filesGetContents(apiKey, owner, repo, path, &branch)
+		res := filesGetContents(apiKey, owner, repo, path, &branch)
 		return res, nil
 	case CreateOrUpdateFileTool.Name:
 		owner, _ := args["owner"].(string)
 		repo, _ := args["repo"].(string)
 		path, _ := args["path"].(string)
-		file := fileFromArgs(args)
+		file := fileCreateFromArgs(args)
 		return filesCreateOrUpdate(apiKey, owner, repo, path, file)
 
 	case CreateBranchTool.Name:
@@ -80,6 +80,14 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 		pr := branchPullRequestSchemaFromArgs(args)
 		return branchCreatePullRequest(apiKey, owner, repo, pr), nil
 
+	case PushFilesTool.Name:
+		owner, _ := args["owner"].(string)
+		repo, _ := args["repo"].(string)
+		branch, _ := args["branch"].(string)
+		message, _ := args["message"].(string)
+		files := filePushFromArgs(args)
+		return filesPush(apiKey, owner, repo, branch, message, files), nil
+
 	default:
 		return CallToolResult{
 			IsError: some(true),
@@ -92,10 +100,6 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 
 }
 
-// Called by mcpx to understand how and why to use this tool.
-// Note: Your servlet configs will not be set when this function is called,
-// so do not rely on config in this function
-// And returns ListToolsResult (The tools' descriptions, supporting multiple tools from a single servlet.)
 func Describe() (ListToolsResult, error) {
 	return ListToolsResult{
 		Tools: append(IssueTools, append(FileTools, BranchTools...)...),

@@ -9,7 +9,7 @@ import (
 
 var (
 	CreateBranchTool = ToolDescription{
-		Name:        "create-branch",
+		Name:        "gh-create-branch",
 		Description: "Create a branch in a GitHub repository",
 		InputSchema: schema{
 			"type": "object",
@@ -23,7 +23,7 @@ var (
 		},
 	}
 	CreatePullRequestTool = ToolDescription{
-		Name:        "create-pull-request",
+		Name:        "gh-create-pull-request",
 		Description: "Create a pull request in a GitHub repository",
 		InputSchema: schema{
 			"type": "object",

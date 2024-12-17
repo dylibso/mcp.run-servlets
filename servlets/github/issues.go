@@ -9,7 +9,7 @@ import (
 
 var (
 	CreateIssueTool = ToolDescription{
-		Name:        "create-issue",
+		Name:        "gh-create-issue",
 		Description: "Create an issue on a GitHub repository",
 		InputSchema: schema{
 			"type": "object",
@@ -26,7 +26,7 @@ var (
 		},
 	}
 	GetIssueTool = ToolDescription{
-		Name:        "get-issue",
+		Name:        "gh-get-issue",
 		Description: "Get an issue from a GitHub repository",
 		InputSchema: schema{
 			"type": "object",
@@ -39,7 +39,7 @@ var (
 		},
 	}
 	AddIssueCommentTool = ToolDescription{
-		Name:        "add-issue-comment",
+		Name:        "gh-add-issue-comment",
 		Description: "Add a comment to an issue in a GitHub repository",
 		InputSchema: schema{
 			"type": "object",
@@ -53,7 +53,7 @@ var (
 		},
 	}
 	UpdateIssueTool = ToolDescription{
-		Name:        "update-issue",
+		Name:        "gh-update-issue",
 		Description: "Update an issue in a GitHub repository",
 		InputSchema: schema{
 			"type": "object",
