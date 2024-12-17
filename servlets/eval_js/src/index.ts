@@ -1,6 +1,6 @@
 import * as main from "./main";
 
-import { CallToolRequest, CallToolResult, ToolDescription } from "./pdk";
+import { CallToolRequest, CallToolResult, ListToolsResult } from "./pdk";
 
 export function call(): number {
   const untypedInput = JSON.parse(Host.inputString());
@@ -17,7 +17,7 @@ export function call(): number {
 export function describe(): number {
   const output = main.describeImpl();
 
-  const untypedOutput = ToolDescription.toJson(output);
+  const untypedOutput = ListToolsResult.toJson(output);
   Host.outputString(JSON.stringify(untypedOutput));
 
   return 0;

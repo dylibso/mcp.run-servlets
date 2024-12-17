@@ -1,7 +1,7 @@
-set shell := ["bash", "-euo", "pipefail"]
 
 build:
-  #!/usr/bin/env sh
+  #!/usr/bin/env bash
+  set -eou pipefail
   for dir in servlets/*/; do
     cd "$dir"
     bash ./prepare.sh
@@ -10,7 +10,8 @@ build:
   done
 
 push:
-  #!/usr/bin/env sh
+  #!/usr/bin/env bash
+  set -eou pipefail
   for dir in servlets/*/; do
     cd "$dir"
     bash ./prepare.sh
@@ -19,7 +20,8 @@ push:
   done
 
 test:
-  #!/usr/bin/env sh
+  #!/usr/bin/env bash
+  set -eou pipefail
   xtp plugin build --path test/testsuite
 
   for dir in servlets/*/; do
