@@ -1,5 +1,7 @@
 mod pdk;
 
+use std::hash::{DefaultHasher, Hash, Hasher};
+
 use extism_pdk::*;
 use pdk::*;
 use types::{CallToolResult, Content, ContentType, ListToolsResult, ToolDescription};
@@ -13,13 +15,22 @@ pub(crate) fn call(input: types::CallToolRequest) -> Result<types::CallToolResul
         .unwrap()
         .expect("ELEVEN_LABS_API_KEY should be set");
     let text = args["text"].as_str().unwrap();
+    let path = args
+        .get("path")
+        .map(|x| x.as_str().unwrap())
+        .unwrap_or("/tmp");
+
+    info!("Converting text to speech: {text}");
     let voice = args
         .get("voice")
         .map(|x| x.as_str().unwrap())
         .unwrap_or_else(|| "flq6f7yk4E4fJM5XTYuZ");
+    info!("With voice: {voice}");
     let body = serde_json::json!({
-    "text": text,
+        "text": text,
     });
+
+    info!("Making HTTP request");
     let res = http::request(
         &HttpRequest::new(format!(
             "https://api.elevenlabs.io/v1/text-to-speech/{voice}"
@@ -29,6 +40,7 @@ pub(crate) fn call(input: types::CallToolRequest) -> Result<types::CallToolResul
         .with_header("Content-Type", "application/json"),
         Some(body),
     )?;
+    info!("Got HTTP response");
 
     let mut out = CallToolResult::default();
     let audio = res.body();
@@ -47,11 +59,17 @@ pub(crate) fn call(input: types::CallToolRequest) -> Result<types::CallToolResul
         return Ok(out);
     }
 
-    let now = chrono::Local::now();
-    let output = format!("/tmp/text-to-speech.{}.mp3", now.timestamp());
+    let mut h = DefaultHasher::new();
+    text.hash(&mut h);
+
+    let mut output = std::path::PathBuf::new();
+    output.push(path);
+    output.push(format!("text-to-speech.{}.mp3", h.finish()));
+    info!("Saving audio to file: {}", output.display());
     std::fs::write(&output, audio)?;
+    info!("Saved audio file");
     let mut c = Content::default();
-    c.text = Some(output);
+    c.text = Some(output.to_str().unwrap().to_string());
     c.r#type = ContentType::Text;
     out.content = vec![c];
     Ok(out)
