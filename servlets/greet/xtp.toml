@@ -8,13 +8,13 @@ name = "greet"
 [scripts]
 
   # xtp plugin build runs this script to generate the wasm file
-  build = "sh prepare.sh && npm run build"
+  build = "bash prepare.sh && npm run build"
 
   # xtp plugin init runs this script to format the plugin code
   format = "npm run format"
 
   # xtp plugin init runs this script before running the format script
-  prepare = "sh prepare.sh && npm install"
+  prepare = "bash prepare.sh && npm install"
 
 [[test]]
 name = "basic tests"

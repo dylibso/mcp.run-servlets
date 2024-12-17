@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eou pipefail
 
 # Function to check if a command exists
 command_exists () {
@@ -35,6 +36,3 @@ if [ "$missing_deps" -ne 0 ]; then
   sleep 2
   exit 1
 fi
-
-
-
