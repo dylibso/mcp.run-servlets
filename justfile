@@ -1,10 +1,16 @@
 
+prepare:
+    #!/usr/bin/env bash
+    if [ -f "./prepare.sh" ]; then
+        bash ./prepare.sh
+    fi
+
 build:
   #!/usr/bin/env bash
   set -eou pipefail
   for dir in servlets/*/; do
     cd "$dir"
-    bash ./prepare.sh
+    just prepare
     xtp plugin build
     cd ../..
   done
@@ -14,8 +20,7 @@ push:
   set -eou pipefail
   for dir in servlets/*/; do
     cd "$dir"
-    bash ./prepare.sh
-    xtp plugin push
+    just prepare
     cd ../..
   done
 

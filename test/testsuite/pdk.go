@@ -2,14 +2,18 @@ package main
 
 import "encoding/json"
 
+type ListToolsResult struct {
+	Tools []ToolDescription `json:"tools"`
+}
+
 type ToolDescription struct {
 	Description string      `json:"description"`
 	InputSchema interface{} `json:"inputSchema"`
 	Name        string      `json:"name"`
 }
 
-func parseToolDescription(data []byte) (ToolDescription, error) {
-	var res ToolDescription
+func parseToolListResult(data []byte) (ListToolsResult, error) {
+	var res ListToolsResult
 	err := json.Unmarshal(data, &res)
 	return res, err
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"regexp"
 
@@ -11,19 +12,21 @@ import (
 //go:export test
 func test() int32 {
 	output := xtptest.CallBytes("describe", []byte{})
-	description, err := parseToolDescription(output)
+	list, err := parseToolListResult(output)
 	if err != nil {
-		xtptest.Assert("Failed to parse tool description", false, err.Error())
+		xtptest.Assert("Failed to parse tool list", false, err.Error())
 		return 1
 	}
 
-	if len(description.Name) == 0 {
-		xtptest.Assert("Name should be non-empty", false, "Name is empty")
-	} else {
-		xtptest.Assert("Successfully parsed tool description", true, description.Name)
-	}
+	for _, tool := range list.Tools {
+		if len(tool.Name) == 0 {
+			xtptest.Assert("Name should be non-empty", false, "Name is empty")
+		} else {
+			xtptest.Assert("Successfully parsed tool description", true, tool.Name)
+		}
 
-	testToolCall(description.Name)
+		testToolCall(tool.Name)
+	}
 
 	return 0
 }
@@ -40,6 +43,8 @@ func testToolCall(name string) {
 		testEvalJS()
 	case "fetch":
 		testFetch()
+	case "fetch-image":
+		testFetchImage()
 	default:
 		xtptest.Assert(fmt.Sprintf("Unable to test '%s'", name), false, "Unknown tool")
 	}
@@ -80,6 +85,54 @@ func testFetch() {
 		// test if the content contains the string "xtp", case-insensitive
 		regex := regexp.MustCompile(`(?i)xtp`)
 		xtptest.Assert("Content text should contain 'xtp'", regex.MatchString(*result.Content[0].Text), *result.Content[0].Text)
+	})
+}
+
+func testFetchImage() {
+	xtptest.Group("test fetch-image tool", func() {
+		pdk.Log(pdk.LogDebug, "Testing fetch image tool")
+
+		arguments := map[string]interface{}{"url": "https://httpbin.org/image/jpeg", "mime-type": "image/jpeg"}
+		input := CallToolRequest{
+			Method: nil,
+			Params: Params{
+				Arguments: &arguments,
+				Name:      "fetch-image",
+			},
+		}
+
+		inputBytes, err := input.Marshal()
+		if err != nil {
+			xtptest.Assert("Failed to marshal input", false, err.Error())
+		}
+
+		output := xtptest.CallBytes("call", inputBytes)
+		result, err := parseCallToolResult(output)
+		if err != nil {
+			xtptest.Assert("Failed to parse tool call result", false, err.Error())
+		}
+
+		pdk.Log(pdk.LogDebug, fmt.Sprintf("Tool call result: %v", string(output)))
+
+		hasErrored := result.IsError != nil && *result.IsError
+
+		xtptest.AssertEq("Tool call should not have errored", hasErrored, false)
+		xtptest.AssertEq("Tool call should have one content item", len(result.Content), 1)
+		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeImage)
+
+		imageData, err := base64.StdEncoding.DecodeString(*result.Content[0].Data)
+		if err != nil {
+			xtptest.Assert("Failed to decode image data", false, err.Error())
+			return
+		}
+
+		if len(imageData) == 0 {
+			xtptest.Assert("Image data should be greater than 0", false, "Image data is empty")
+			return
+		}
+
+		// test the image for the magic number for JPEG
+		xtptest.AssertEq("Image data should start with JPEG magic number", string(imageData[:2]), "\xFF\xD8")
 	})
 }
 
@@ -150,8 +203,7 @@ func testGreet() {
 		xtptest.AssertEq("Tool call should have one content item", len(result.Content), 1)
 		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeText)
 
-		regex := regexp.MustCompile(`^(.)+ says: Hello, Steve!$`)
-		xtptest.Assert("Content text should match `X says: Hello, Steve!`", regex.MatchString(*result.Content[0].Text), *result.Content[0].Text)
+		xtptest.AssertEq("Content text should be `Hello Steve!!!`", "Hello Steve!!!", *result.Content[0].Text)
 	})
 }
 
