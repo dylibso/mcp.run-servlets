@@ -1,5 +1,7 @@
 go 1.23
 
 use (
+	./servlets/crypto-hash
+	./servlets/historical-flight-api
 	./test/testsuite
 )
