@@ -10,6 +10,7 @@ JSONCONS_ENUM_TRAITS(pdk::Role, assistant, user)
 JSONCONS_N_MEMBER_NAME_TRAITS(pdk::ToolDescription, 3,
                               (inputSchema, "inputSchema"),
                               (description, "description"), (name, "name"))
+JSONCONS_N_MEMBER_NAME_TRAITS(pdk::ListToolsResult, 1, (tools, "tools"))
 JSONCONS_N_MEMBER_NAME_TRAITS(pdk::TextResourceContents, 2, (text, "text"),
                               (uri, "uri"), (mimeType, "mimeType"))
 JSONCONS_N_MEMBER_NAME_TRAITS(pdk::TextAnnotation, 2, (audience, "audience"),
@@ -18,7 +19,7 @@ JSONCONS_N_MEMBER_NAME_TRAITS(pdk::Content, 1, (type, "type"),
                               (annotations, "annotations"), (data, "data"),
                               (mimeType, "mimeType"), (text, "text"))
 JSONCONS_N_MEMBER_NAME_TRAITS(pdk::CallToolResult, 1, (content, "content"),
-                              (_meta, "_meta"), (isError, "isError"))
+                              (isError, "isError"))
 JSONCONS_N_MEMBER_NAME_TRAITS(pdk::Params, 1, (name, "name"),
                               (arguments, "arguments"))
 JSONCONS_N_MEMBER_NAME_TRAITS(pdk::CallToolRequest, 1, (params, "params"),
