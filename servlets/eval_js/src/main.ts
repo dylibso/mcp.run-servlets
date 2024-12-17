@@ -1,4 +1,4 @@
-import { CallToolRequest, CallToolResult, ContentType, ToolDescription } from "./pdk";
+import { CallToolRequest, CallToolResult, ContentType, ListToolsResult, ToolDescription } from "./pdk";
 
 /**
  * Called when the tool is invoked.
@@ -27,19 +27,23 @@ export function callImpl(input: CallToolRequest): CallToolResult {
  *
  * @returns {ToolDescription} The tool's description
  */
-export function describeImpl(): ToolDescription {
+export function describeImpl(): ListToolsResult {
   return {
-    name: "eval_js",
-    description: "Evaluate some javascript using `eval()` in a sandbox.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        code: {
-          type: "string",
-          description: "The javascript code to eval. This code gets passed into `eval()` and the result is stringified. Do not use console.log to emit the result.",
+    tools: [
+      {
+        name: "eval_js",
+        description: "Evaluate some javascript using `eval()` in a sandbox.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            code: {
+              type: "string",
+              description: "The javascript code to eval. This code gets passed into `eval()` and the result is stringified. Do not use console.log to emit the result.",
+            },
+          },
+          required: ["code"],
         },
-      },
-      required: ["code"],
-    },
+      }
+    ]
   }
 }
