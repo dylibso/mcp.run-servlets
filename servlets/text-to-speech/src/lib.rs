@@ -16,7 +16,7 @@ pub(crate) fn call(input: types::CallToolRequest) -> Result<types::CallToolResul
     let voice = args
         .get("voice")
         .map(|x| x.as_str().unwrap())
-        .unwrap_or_else(|| "JBFqnCBsd6RMkjVDRZzb");
+        .unwrap_or_else(|| "flq6f7yk4E4fJM5XTYuZ");
     let body = serde_json::json!({
     "text": text,
     });
