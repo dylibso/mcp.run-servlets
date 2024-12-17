@@ -1,4 +1,5 @@
-set shell := ["bash", "-euo", "pipefail"]
+set shell := ["bash", "-eux", "-o", "pipefail"]
+
 
 build:
   #!/usr/bin/env sh
