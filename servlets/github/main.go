@@ -41,9 +41,14 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 	case CreateIssueTool.Name:
 		owner, _ := args["owner"].(string)
 		repo, _ := args["repo"].(string)
-		title, _ := args["title"].(string)
-		body, _ := args["body"].(string)
-		return issueCreate(apiKey, owner, repo, title, body)
+		data := issueFromArgs(args)
+		return issueCreate(apiKey, owner, repo, data)
+	case UpdateIssueTool.Name:
+		owner, _ := args["owner"].(string)
+		repo, _ := args["repo"].(string)
+		issue, _ := args["issue"].(float64)
+		data := issueFromArgs(args)
+		return issueUpdate(apiKey, owner, repo, int(issue), data)
 	default:
 		return CallToolResult{
 			IsError: some(true),
