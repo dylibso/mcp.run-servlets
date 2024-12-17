@@ -69,7 +69,13 @@ pub(crate) fn call(input: types::CallToolRequest) -> Result<types::CallToolResul
     std::fs::write(&output, audio)?;
     info!("Saved audio file");
     let mut c = Content::default();
-    c.text = Some(output.to_str().unwrap().to_string());
+    c.text = Some(
+        serde_json::json!({
+            "outputPath": output.to_str().unwrap()
+        })
+        .to_string(),
+    );
+    c.mime_type = Some("application/json".to_string());
     c.r#type = ContentType::Text;
     out.content = vec![c];
     Ok(out)
@@ -81,7 +87,7 @@ pub(crate) fn call(input: types::CallToolRequest) -> Result<types::CallToolResul
 pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
     Ok(ListToolsResult {
         tools: vec![ToolDescription {
-            description: "Text-to-speech, generate audio of text using the Eleven Labs API"
+            description: "Text-to-speech, generate audio of text using the Eleven Labs API. The LLM will output the path on disk where the audio file is saved."
                 .to_string(),
             name: "text-to-speech".to_string(),
             input_schema: serde_json::json!({
