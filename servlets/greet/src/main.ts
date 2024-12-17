@@ -1,4 +1,4 @@
-import { CallToolRequest, CallToolResult, ContentType, ListToolsResult, ToolDescription } from "./pdk";
+import { CallToolRequest, CallToolResult, ContentType, ListToolsResult } from "./pdk";
 
 /**
  * Called when the tool is invoked.
