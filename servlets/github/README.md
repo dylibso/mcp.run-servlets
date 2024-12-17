@@ -17,7 +17,7 @@ Files:
 Branches: 
 
 - `gh-create-branch` Create a new branch
-- `gh-create-pull-request` Createa a PR from a branch
+- `gh-create-pull-request` Create a PR from a branch
 
 
 
