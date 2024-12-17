@@ -158,53 +158,70 @@ export function callImpl(input: CallToolRequest): CallToolResult {
   if (!teamId) {
     return ErrorContent('Config SLACK_TEAM_ID not provided')
   }
-  const slackClient = new SlackClient(botToken as string, teamId as string);
 
+  const slackClient = new SlackClient(botToken as string, teamId as string);
   let contentText = 'unset response'
-  if (input.params.name === 'slack_list_channels') {
-    const {cursor, limit} = input.params.arguments || {}
-    contentText = slackClient.getChannels(limit, cursor)
-  } else if (input.params.name === 'slack_post_message') {
-    const {channel_id, text } = input.params.arguments || {}
-    if (!channel_id || !text) {
-      return ErrorContent('channel_id or text is missing')
+  switch (input.params.name) {
+    case 'slack_list_channels': {
+      const {cursor, limit} = input.params.arguments || {}
+      contentText = slackClient.getChannels(limit, cursor)
+      break
     }
-    contentText = slackClient.postMessage(channel_id, text)
-  } else if (input.params.name === 'slack_reply_to_thread') {
-    const {channel_id, thread_ts, text } = input.params.arguments || {}
-    if (!channel_id || !thread_ts || !text) {
-      return ErrorContent('channel_id or thread_ts or text is missing')
+    case 'slack_post_message': {
+      const {channel_id, text} = input.params.arguments || {}
+      if (!channel_id || !text) {
+        return ErrorContent('channel_id or text is missing')
+      }
+      contentText = slackClient.postMessage(channel_id, text)
+      break
     }
-    contentText = slackClient.postReply(channel_id, thread_ts, text)
-  } else if (input.params.name === 'slack_add_reaction') {
-    const {channel_id, timestamp, reaction} = input.params.arguments || {}
-    if (!channel_id || !timestamp || !reaction) {
-      return ErrorContent('channel_id or timestamp or reaction is missing')
+    case 'slack_reply_to_thread': {
+      const {channel_id, thread_ts, text} = input.params.arguments || {}
+      if (!channel_id || !thread_ts || !text) {
+        return ErrorContent('channel_id or thread_ts or text is missing')
+      }
+      contentText = slackClient.postReply(channel_id, thread_ts, text)
+      break
     }
-    contentText = slackClient.addReaction(channel_id, timestamp, reaction)
-  } else if (input.params.name === 'slack_get_channel_history') {
-    const { channel_id, limit } = input.params.arguments || {}
-    if (!channel_id) {
-      return ErrorContent('channel_id not provided')
+    case 'slack_add_reaction': {
+      const {channel_id, timestamp, reaction} = input.params.arguments || {}
+      if (!channel_id || !timestamp || !reaction) {
+        return ErrorContent('channel_id or timestamp or reaction is missing')
+      }
+      contentText = slackClient.addReaction(channel_id, timestamp, reaction)
+      break
     }
-    contentText = slackClient.getChannelHistory(channel_id, limit);
-  } else if (input.params.name === 'slack_get_thread_replies') {
-    const {channel_id, thread_ts} = input.params.arguments || {}
-    if (!channel_id || !thread_ts) {
-      return ErrorContent('channel_id or thread_ts is missing')
+    case 'slack_get_channel_history': {
+      const {channel_id, limit} = input.params.arguments || {}
+      if (!channel_id) {
+        return ErrorContent('channel_id not provided')
+      }
+      contentText = slackClient.getChannelHistory(channel_id, limit)
+      break
     }
-    contentText = slackClient.getThreadReplies(channel_id, thread_ts)
-  } else if (input.params.name === 'slack_get_users') {
-    const {cursor, limit} = input.params.arguments || {}
-    contentText = slackClient.getUsers(limit, cursor)
-  } else if (input.params.name === 'slack_get_user_profile') {
-    const user_id = input.params.arguments?.user_id
-    if (!user_id) {
-      return ErrorContent('user_id is missing')
+    case 'slack_get_thread_replies': {
+      const {channel_id, thread_ts} = input.params.arguments || {}
+      if (!channel_id || !thread_ts) {
+        return ErrorContent('channel_id or thread_ts is missing')
+      }
+      contentText = slackClient.getThreadReplies(channel_id, thread_ts)
+      break
     }
-    contentText = slackClient.getUserProfile(user_id)
-  } else {
-    return ErrorContent(`Unknown command ${input.params.name}`);
+    case 'slack_get_users': {
+      const {cursor, limit} = input.params.arguments || {}
+      contentText = slackClient.getUsers(limit, cursor)
+      break
+    }
+    case 'slack_get_user_profile': {
+      const user_id = input.params.arguments?.user_id
+      if (!user_id) {
+        return ErrorContent('user_id is missing')
+      }
+      contentText = slackClient.getUserProfile(user_id)
+      break
+    }
+    default:
+      return ErrorContent(`Unknown command ${input.params.name}`)
   }
 
   return {
