@@ -58,7 +58,7 @@ fn to_ecc(num: u8) -> QrCodeEcc {
 // Called by mcpx to understand how and why to use this tool
 pub(crate) fn describe() -> Result<ListToolsResult, Error> {
     /*
-    {
+    { tools: [{
         name: "qr_as_png",
         description: "Convert a URL to a QR code PNG",
         inputSchema: {
@@ -70,15 +70,12 @@ pub(crate) fn describe() -> Result<ListToolsResult, Error> {
             },
             ecc: {
               type: "number",
-              description: "Error correction level",
-            },
-            width: {
-              type: "number",
-              description: "Width of the QR code",
+              description: "Error correction level (1-4, default to 4 unless user specifies)",
             },
           },
           required: ["data"],
-        },
+        }]
+    }
     */
     let mut data_prop: Map<String, Value> = Map::new();
     data_prop.insert("type".into(), "string".into());
@@ -91,20 +88,12 @@ pub(crate) fn describe() -> Result<ListToolsResult, Error> {
     ecc_prop.insert("type".into(), "number".into());
     ecc_prop.insert(
         "description".into(),
-        "Error correction level: 1 - 4 (4 being most recoverable)".into(),
-    );
-
-    let mut width_prop: Map<String, Value> = Map::new();
-    width_prop.insert("type".into(), "number".into());
-    width_prop.insert(
-        "description".into(),
-        "Width (in pixels) of the QR code".into(),
+        "Error correction level (range from 1 [low] to 4 [high], default to 4 unless user specifies)".into(),
     );
 
     let mut props: Map<String, Value> = Map::new();
     props.insert("data".into(), data_prop.into());
     props.insert("ecc".into(), ecc_prop.into());
-    props.insert("width".into(), width_prop.into());
 
     let mut schema: Map<String, Value> = Map::new();
     schema.insert("type".into(), "object".into());
