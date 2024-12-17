@@ -49,6 +49,20 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 		issue, _ := args["issue"].(float64)
 		data := issueFromArgs(args)
 		return issueUpdate(apiKey, owner, repo, int(issue), data)
+
+	case GetFileContentsTool.Name:
+		owner, _ := args["owner"].(string)
+		repo, _ := args["repo"].(string)
+		path, _ := args["path"].(string)
+		branch, _ := args["branch"].(string)
+		res, _ := filesGetContents(apiKey, owner, repo, path, &branch)
+		return res, nil
+	case CreateOrUpdateFileTool.Name:
+		owner, _ := args["owner"].(string)
+		repo, _ := args["repo"].(string)
+		path, _ := args["path"].(string)
+		file := fileFromArgs(args)
+		return filesCreateOrUpdate(apiKey, owner, repo, path, file)
 	default:
 		return CallToolResult{
 			IsError: some(true),
@@ -67,10 +81,28 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 // And returns ListToolsResult (The tools' descriptions, supporting multiple tools from a single servlet.)
 func Describe() (ListToolsResult, error) {
 	return ListToolsResult{
-		Tools: IssueTools,
+		Tools: append(IssueTools, FileTools...),
 	}, nil
 }
 
 func some[T any](t T) *T {
 	return &t
 }
+
+type SchemaProperty struct {
+	Type        string          `json:"type"`
+	Description string          `json:"description,omitempty"`
+	Items       *SchemaProperty `json:"items,omitempty"`
+}
+
+func prop(tpe, description string) SchemaProperty {
+	return SchemaProperty{Type: tpe, Description: description}
+}
+
+func arrprop(tpe, description, itemstpe string) SchemaProperty {
+	items := SchemaProperty{Type: itemstpe}
+	return SchemaProperty{Type: tpe, Description: description, Items: &items}
+}
+
+type schema = map[string]interface{}
+type props = map[string]SchemaProperty

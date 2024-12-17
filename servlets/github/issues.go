@@ -11,40 +11,16 @@ var (
 	CreateIssueTool = ToolDescription{
 		Name:        "create-issue",
 		Description: "Create an issue on a GitHub repository",
-		InputSchema: map[string]interface{}{
+		InputSchema: schema{
 			"type": "object",
-			"properties": map[string]interface{}{
-				"owner": map[string]interface{}{
-					"type":        "string",
-					"description": "The owner of the repository",
-				},
-				"repo": map[string]interface{}{
-					"type":        "string",
-					"description": "The repository name",
-				},
-				"title": map[string]interface{}{
-					"type":        "string",
-					"description": "The title of the issue",
-				},
-				"body": map[string]interface{}{
-					"type":        "string",
-					"description": "The body of the issue",
-				},
-				"state": map[string]interface{}{
-					"type":        "string",
-					"description": "The state of the issue",
-				},
-				"assignees": map[string]interface{}{
-					"type":        "array",
-					"description": "The assignees of the issue",
-					"items": map[string]interface{}{
-						"type": "string",
-					},
-				},
-				"milestone": map[string]interface{}{
-					"type":        "integer",
-					"description": "The milestone of the issue",
-				},
+			"properties": props{
+				"owner":     prop("string", "The owner of the repository"),
+				"repo":      prop("string", "The repository name"),
+				"title":     prop("string", "The title of the issue"),
+				"body":      prop("string", "The body of the issue"),
+				"state":     prop("string", "The state of the issue"),
+				"assignees": arrprop("string", "The assignees of the issue", "string"),
+				"milestone": prop("integer", "The milestone of the issue"),
 			},
 			"required": []string{"owner", "repo", "title", "body"},
 		},
@@ -52,21 +28,12 @@ var (
 	GetIssueTool = ToolDescription{
 		Name:        "get-issue",
 		Description: "Get an issue from a GitHub repository",
-		InputSchema: map[string]interface{}{
+		InputSchema: schema{
 			"type": "object",
-			"properties": map[string]interface{}{
-				"owner": map[string]interface{}{
-					"type":        "string",
-					"description": "The owner of the repository",
-				},
-				"repo": map[string]interface{}{
-					"type":        "string",
-					"description": "The repository name",
-				},
-				"issue": map[string]interface{}{
-					"type":        "integer",
-					"description": "The issue number",
-				},
+			"properties": props{
+				"owner": prop("string", "The owner of the repository"),
+				"repo":  prop("string", "The repository name"),
+				"issue": prop("integer", "The issue number"),
 			},
 			"required": []string{"owner", "repo", "issue"},
 		},
@@ -74,25 +41,13 @@ var (
 	AddIssueCommentTool = ToolDescription{
 		Name:        "add-issue-comment",
 		Description: "Add a comment to an issue in a GitHub repository",
-		InputSchema: map[string]interface{}{
+		InputSchema: schema{
 			"type": "object",
-			"properties": map[string]interface{}{
-				"owner": map[string]interface{}{
-					"type":        "string",
-					"description": "The owner of the repository",
-				},
-				"repo": map[string]interface{}{
-					"type":        "string",
-					"description": "The repository name",
-				},
-				"issue": map[string]interface{}{
-					"type":        "integer",
-					"description": "The issue number",
-				},
-				"body": map[string]interface{}{
-					"type":        "string",
-					"description": "The body of the comment",
-				},
+			"properties": props{
+				"owner": prop("string", "The owner of the repository"),
+				"repo":  prop("string", "The repository name"),
+				"issue": prop("integer", "The issue number"),
+				"body":  prop("string", "The body of the issue"),
 			},
 			"required": []string{"owner", "repo", "issue", "body"},
 		},
@@ -100,44 +55,17 @@ var (
 	UpdateIssueTool = ToolDescription{
 		Name:        "update-issue",
 		Description: "Update an issue in a GitHub repository",
-		InputSchema: map[string]interface{}{
+		InputSchema: schema{
 			"type": "object",
-			"properties": map[string]interface{}{
-				"owner": map[string]interface{}{
-					"type":        "string",
-					"description": "The owner of the repository",
-				},
-				"repo": map[string]interface{}{
-					"type":        "string",
-					"description": "The repository name",
-				},
-				"issue": map[string]interface{}{
-					"type":        "integer",
-					"description": "The issue number",
-				},
-				"title": map[string]interface{}{
-					"type":        "string",
-					"description": "The title of the issue",
-				},
-				"body": map[string]interface{}{
-					"type":        "string",
-					"description": "The body of the issue",
-				},
-				"state": map[string]interface{}{
-					"type":        "string",
-					"description": "The state of the issue",
-				},
-				"assignees": map[string]interface{}{
-					"type":        "array",
-					"description": "The assignees of the issue",
-					"items": map[string]interface{}{
-						"type": "string",
-					},
-				},
-				"milestone": map[string]interface{}{
-					"type":        "integer",
-					"description": "The milestone of the issue",
-				},
+			"properties": props{
+				"owner":     prop("string", "The owner of the repository"),
+				"repo":      prop("string", "The repository name"),
+				"issue":     prop("integer", "The issue number"),
+				"title":     prop("string", "The title of the issue"),
+				"body":      prop("string", "The body of the issue"),
+				"state":     prop("string", "The state of the issue"),
+				"assignees": arrprop("string", "The assignees of the issue", "string"),
+				"milestone": prop("integer", "The milestone of the issue"),
 			},
 			"required": []string{"owner", "repo", "issue"},
 		},
