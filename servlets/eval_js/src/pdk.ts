@@ -84,8 +84,7 @@ export class BlobResourceContents {
  * Used by the client to invoke a tool provided by the server.
  */
 export class CallToolRequest {
-  // @ts-expect-error TS2564
-  method: string;
+  method?: string;
 
   // @ts-expect-error TS2564
   params: Params;
@@ -118,11 +117,6 @@ export class CallToolRequest {
  * should be reported as an MCP error response.
  */
 export class CallToolResult {
-  /**
-   * This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses.
-   */
-  _meta?: any;
-
   // @ts-expect-error TS2564
   content: Array<Content>;
 
@@ -196,6 +190,31 @@ export enum ContentType {
   Text = "text",
   Image = "image",
   Resource = "resource",
+}
+
+/**
+ * Provides one or more descriptions of the tools available in this servlet.
+ */
+export class ListToolsResult {
+  /**
+   * The list of ToolDescription objects provided by this servlet.
+   */
+  // @ts-expect-error TS2564
+  tools: Array<ToolDescription>;
+
+  static fromJson(obj: any): ListToolsResult {
+    return {
+      ...obj,
+      tools: cast(castArray(ToolDescription.fromJson), obj.tools),
+    };
+  }
+
+  static toJson(obj: ListToolsResult): any {
+    return {
+      ...obj,
+      tools: cast(castArray(ToolDescription.toJson), obj.tools),
+    };
+  }
 }
 
 /**
@@ -296,7 +315,7 @@ export class TextResourceContents {
 }
 
 /**
- * Tells mcpx
+ * Describes the capabilities and expected paramters of the tool function
  */
 export class ToolDescription {
   /**

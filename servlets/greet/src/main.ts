@@ -1,4 +1,4 @@
-import { CallToolRequest, CallToolResult, ContentType, ToolDescription } from "./pdk";
+import { CallToolRequest, CallToolResult, ContentType, ListToolsResult, ToolDescription } from "./pdk";
 
 /**
  * Called when the tool is invoked.
@@ -26,19 +26,21 @@ export function callImpl(input: CallToolRequest): CallToolResult {
  *
  * @returns {ToolDescription} The tool's description
  */
-export function describeImpl(): ToolDescription {
+export function describeImpl(): ListToolsResult {
   return {
-    name: "greet",
-    description: "A very simple tool to provide a greeting",
-    inputSchema: {
-      type: "object",
-      properties: {
-        name: {
-          type: "string",
-          description: "the name of the person to greet",
+    tools: [{
+      name: "greet",
+      description: "A very simple tool to provide a greeting",
+      inputSchema: {
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            description: "the name of the person to greet",
+          },
         },
+        required: ["name"],
       },
-      required: ["name"],
-    }
+    }]
   }
 }
