@@ -40,7 +40,7 @@ type TenorMediaItem struct {
 // NewTenorClient creates a new Tenor API client
 func NewTenorClient() (*TenorClient, error) {
 	// Default API key embedded at build time
-	defaultAPIKey := "AIzaSyBPEvZcufj7hklpDLUmgz2MtLyQY8XHOio"
+	defaultAPIKey := "TENOR_API_KEY_PLACEHOLDER"
 
 	// Try to get API key from config first (allows users to override)
 	apiKey, ok := pdk.GetConfig("API_KEY")
