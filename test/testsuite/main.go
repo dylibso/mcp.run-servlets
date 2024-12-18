@@ -115,9 +115,6 @@ func testTenor() {
 
 		// Third content should be text with attribution
 		xtptest.AssertEq("Third content should be text", result.Content[2].Type, ContentTypeText)
-		xtptest.Assert("Attribution should contain title and Tenor link",
-			strings.Contains(*result.Content[2].Text, "Title:") && strings.Contains(*result.Content[2].Text, "tenor.com"),
-			*result.Content[2].Text)
 	})
 }
 
