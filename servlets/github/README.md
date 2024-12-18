@@ -4,9 +4,10 @@ Currently supported:
 
 Issues: 
 
+- `gh-create-issue` Create issue
 - `gh-get-issue` Get issue
-- `gh-add-issue-comment` Read the contents of an issue
 - `gh-update-issue` Add comments to an issue
+- `gh-add-issue-comment` Read the contents of an issue
 
 Files:
 
