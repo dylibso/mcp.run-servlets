@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strings"
 
 	pdk "github.com/extism/go-pdk"
 )
@@ -39,7 +40,7 @@ type TenorMediaItem struct {
 // NewTenorClient creates a new Tenor API client
 func NewTenorClient() (*TenorClient, error) {
 	// Default API key embedded at build time
-	defaultAPIKey := "TENOR_API_KEY_PLACEHOLDER"
+	defaultAPIKey := "AIzaSyBPEvZcufj7hklpDLUmgz2MtLyQY8XHOio"
 
 	// Try to get API key from config first (allows users to override)
 	apiKey, ok := pdk.GetConfig("API_KEY")
@@ -128,7 +129,7 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 			return CallToolResult{}, errors.New("query parameter required")
 		}
 
-		limit := 5 // Default limit
+		limit := 1 // Default limit
 		if limitVal, ok := args["limit"].(float64); ok {
 			limit = int(limitVal)
 		}
@@ -159,20 +160,27 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 					continue
 				}
 
-				gifContent := Content{
+				if len(strings.TrimSpace(result.Title)) > 0 {
+					content = append(content, Content{
+						Type: ContentTypeText,
+						Text: ptr(result.Title),
+					})
+				}
+
+				content = append(content, Content{
 					Type:     ContentTypeImage,
 					Data:     &encodedGif,
 					MimeType: ptr("image/gif"),
-				}
-				content = append(content, gifContent)
+				})
 
-				// Add attribution and title
-				attribution := fmt.Sprintf("Title: %s\nView on Tenor: %s",
-					result.Title,
-					result.ItemURL)
 				content = append(content, Content{
 					Type: ContentTypeText,
-					Text: &attribution,
+					Text: ptr(result.Description),
+				})
+
+				content = append(content, Content{
+					Type: ContentTypeText,
+					Text: &result.ItemURL,
 				})
 			}
 		}
@@ -203,9 +211,9 @@ func Describe() (ListToolsResult, error) {
 						},
 						"limit": map[string]interface{}{
 							"type":        "number",
-							"description": "Maximum number of results to return (default: 5)",
+							"description": "Maximum number of results to return (default: 1)",
 							"minimum":     1,
-							"maximum":     20,
+							"maximum":     3,
 						},
 					},
 				},
