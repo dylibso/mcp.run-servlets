@@ -2,7 +2,7 @@ mod pdk;
 
 use extism_pdk::*;
 use pdk::*;
-use types::{CallToolResult, Content, ContentType};
+use types::{CallToolResult, Content, ContentType, ListToolsResult, ToolDescription};
 
 // Called when the tool is invoked.
 // If you support multiple tools, you must switch on the input.params.name to detect which tool is being called.
@@ -22,7 +22,7 @@ pub(crate) fn call(input: types::CallToolRequest) -> Result<types::CallToolResul
             let pin = args
                 .get("pin")
                 .map(|x| x.as_bool().unwrap_or_default())
-                .unwrap_or_default();
+                .unwrap_or(true);
             let req = HttpRequest::new(format!("{endpoint}/api/v0/add?pin={pin}"))
                 .with_method("POST")
                 .with_header("Abspath", "file.txt")
@@ -84,5 +84,54 @@ pub(crate) fn call(input: types::CallToolRequest) -> Result<types::CallToolResul
 // Note: Your servlet configs will not be set when this function is called,
 // so do not rely on config in this function
 pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
-    todo!("Implement describe")
+    Ok(ListToolsResult {
+        tools: vec![
+            ToolDescription {
+                name: "ipfs-add".to_string(),
+                description: "Push data into IPFS".to_string(),
+                input_schema: serde_json::json!({
+                "type": "object",
+                "required": ["data"],
+                "properties": {
+                    "data": {
+                        "type": "string",
+                        "description": "The data to store in IPFS"
+                    },
+                    "pin": {
+                        "type": "bool",
+                        "description": "Determines whether the data should be pinned or not",
+                    },
+                    "endpoint": {
+                        "type": "string",
+                        "description": "The IPFS endpoint"
+                    }
+                }
+                })
+                .as_object()
+                .unwrap()
+                .clone(),
+            },
+            ToolDescription {
+                name: "ipfs-get".to_string(),
+                description: "Fetch data from IPFS".to_string(),
+                input_schema: serde_json::json!({
+                "type": "object",
+                "required": ["cid"],
+                "properties": {
+                    "cid": {
+                        "type": "string",
+                        "description": "IPFS hash to fetch"
+                    },
+                    "endpoint": {
+                        "type": "string",
+                        "description": "The IPFS endpoint"
+                    }
+                }
+                })
+                .as_object()
+                .unwrap()
+                .clone(),
+            },
+        ],
+    })
 }
