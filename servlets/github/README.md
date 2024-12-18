@@ -4,7 +4,7 @@ Currently supported:
 
 Issues: 
 
-- `gh-get-issue` Create issues
+- `gh-get-issue` Get issue
 - `gh-add-issue-comment` Read the contents of an issue
 - `gh-update-issue` Add comments to an issue
 
