@@ -4,5 +4,6 @@ use (
 	./servlets/crypto-hash
 	./servlets/github
 	./servlets/historical-flight-api
+	./servlets/wordpress
 	./test/testsuite
 )

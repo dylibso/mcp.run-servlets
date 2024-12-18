@@ -1,0 +1,3 @@
+*.wasm
+test.sh
+dev/**
