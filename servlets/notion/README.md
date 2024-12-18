@@ -1,120 +1,98 @@
 # Notion MCP Tool
 
-A Model Context Protocol (MCP) tool for interacting with the Notion API. This tool provides a comprehensive interface to Notion's API endpoints, allowing you to manipulate blocks, pages, databases, users, and more.
+A Model Context Protocol plugin that provides comprehensive access to the Notion API, allowing seamless integration with Notion's blocks, pages, databases, users, and comments functionality.
 
 ## Features
 
 - **Block Operations**
-  - Append block children
-  - Retrieve blocks
-  - List block children
+  - Append child blocks
+  - Retrieve blocks and their children
   - Delete blocks
-
 - **Page Operations**
   - Retrieve pages
   - Update page properties
-
 - **Database Operations**
-  - Create databases
-  - Query databases
-  - Retrieve database details
-  - Update database properties
+  - Create and query databases
+  - Retrieve and update database properties
   - Create database items
-
-- **Comment Operations**
-  - Create comments
-  - Retrieve comments
-
-- **User Operations**
+- **User Management**
   - List workspace users
-  - Retrieve user details
-  - Get bot user information
-
+  - Retrieve user information
+  - Access bot user details
+- **Comment System**
+  - Create comments
+  - Retrieve comments for blocks
 - **Search Functionality**
   - Search across pages and databases
+  - Filter and sort results
 
 ## Setup
 
-1. Create a Notion integration at https://www.notion.so/my-integrations
-2. Get your integration token
-3. Set the NOTION_TOKEN at the installation step
+  * Create a Notion integration at [https://www.notion.so/my-integrations](https://www.notion.so/my-integrations)
+  * Get your integration token
+  * Set the `NOTION_TOKEN` when installing
 
 ## Usage
 
-The tool exposes a single `notion` command with various operations. Here are some example usages:
+### Tool Names and Descriptions
 
-### Query a Database
+Each Notion operation is exposed as a separate tool with the prefix `notion_`. Here are the available tools:
+
+#### Block Operations
+- `notion_append_block_children`: Append new blocks to a parent block
+- `notion_retrieve_block`: Get a specific block's information
+- `notion_retrieve_block_children`: List a block's child blocks
+- `notion_delete_block`: Remove a block
+
+#### Page Operations
+- `notion_retrieve_page`: Get page information
+- `notion_update_page_properties`: Modify page properties
+
+#### Database Operations
+- `notion_create_database`: Create a new database
+- `notion_query_database`: Search and filter database items
+- `notion_retrieve_database`: Get database information
+- `notion_update_database`: Modify database properties
+- `notion_create_database_item`: Add a new item to a database
+
+#### User Operations
+- `notion_list_users`: List workspace users
+- `notion_retrieve_user`: Get user information
+- `notion_retrieve_bot_user`: Get current bot user details
+
+#### Comment Operations
+- `notion_create_comment`: Create a new comment
+- `notion_retrieve_comments`: Get comments for a block
+
+#### Search Operations
+- `notion_search`: Search across pages and databases
+
+### Example Usage
+
+Here's an example of how to use the plugin to create a new database item:
 
 ```json
 {
-  "operation": "query_database",
-  "database_id": "your-database-id",
-  "filter": {
-    "property": "Status",
-    "select": {
-      "equals": "Done"
-    }
-  },
-  "sorts": [
-    {
-      "property": "Created",
-      "direction": "descending"
-    }
-  ]
-}
-```
-
-### Create a Page in a Database
-
-```json
-{
-  "operation": "create_database_item",
-  "database_id": "your-database-id",
-  "properties": {
-    "Name": {
-      "title": [
-        {
-          "text": {
-            "content": "New task"
+  "name": "notion_create_database_item",
+  "arguments": {
+    "database_id": "your-database-id",
+    "properties": {
+      "Name": {
+        "title": [
+          {
+            "text": {
+              "content": "New Item"
+            }
           }
+        ]
+      },
+      "Status": {
+        "select": {
+          "name": "In Progress"
         }
-      ]
-    },
-    "Status": {
-      "select": {
-        "name": "In Progress"
       }
     }
   }
 }
 ```
-
-### Retrieve Block Children
-
-```json
-{
-  "operation": "retrieve_block_children",
-  "block_id": "your-block-id",
-  "page_size": 50
-}
-```
-
-## Error Handling
-
-The tool provides detailed error messages when:
-- Required parameters are missing
-- The Notion API returns an error
-- The integration token is invalid or missing
-- The request format is incorrect
-
-## Integration Permissions
-
-Make sure your Notion integration has the necessary capabilities enabled for the operations you want to perform:
-- Read content
-- Update content
-- Insert content
-- Read comments
-- Create comments
-- Read user information (requires Enterprise plan for some operations)
-
 
