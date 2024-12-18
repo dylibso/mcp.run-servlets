@@ -1,0 +1,3 @@
+# Amadeus Flight API
+
+Amadeus is ...
