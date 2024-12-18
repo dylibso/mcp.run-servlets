@@ -28,10 +28,6 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 	switch input.Params.Name {
 	case FlightOfferSearchTool.Name:
 		return flightOfferSearch(args), nil
-	case FlightDatesTool.Name:
-		return flightDates(args), nil
-	case FlightInspirationTool.Name:
-		return flightInspiration(args), nil
 	default:
 		return CallToolResult{}, fmt.Errorf("unknown tool name %q", input.Params.Name)
 	}
