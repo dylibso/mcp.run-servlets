@@ -1,6 +1,7 @@
 go 1.23
 
 use (
+	./servlets/assembly-ai
 	./servlets/crypto-hash
 	./servlets/github
 	./servlets/historical-flight-api

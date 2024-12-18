@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/extism/go-pdk"
 )
@@ -146,8 +145,6 @@ func transcribeAudio(apiKey string, audioData []byte) (*Transcript, error) {
 		// Sleep for a few seconds before next poll
 		// Note: In a real implementation, you'd want to use backoff
 		pdk.Log(pdk.LogInfo, fmt.Sprintf("Status: %s", transcript.Status))
-
-		time.Sleep(100)
 	}
 
 	pdk.Log(pdk.LogInfo, "Transcription completed")
