@@ -19,7 +19,7 @@ enum class ContentType { text, image, resource };
 // The sender or recipient of messages and data in a conversation.
 enum class Role { assistant, user };
 
-// Tells mcpx
+// Describes the capabilities and expected paramters of the tool function
 struct ToolDescription {
   // The JSON schema describing the argument input
   jsoncons::json inputSchema;
@@ -27,6 +27,12 @@ struct ToolDescription {
   std::string description;
   // The name of the tool. It should match the plugin / binding name.
   std::string name;
+};
+
+// Provides one or more descriptions of the tools available in this servlet.
+struct ListToolsResult {
+  // The list of ToolDescription objects provided by this servlet.
+  std::vector<ToolDescription> tools;
 };
 
 //
@@ -78,9 +84,6 @@ struct Content {
 // tool calls, or any other exceptional conditions, should be reported as an MCP
 // error response.
 struct CallToolResult {
-  // This result property is reserved by the protocol to allow clients and
-  // servers to attach additional metadata to their responses.
-  std::optional<jsoncons::json> _meta;
   //
   std::vector<Content> content;
   // Whether the tool call ended in an error.  If not set, this is assumed to be
@@ -123,6 +126,9 @@ namespace impl {
 
 /**
  * Called when the tool is invoked.
+ * If you support multiple tools, you must switch on the input.params.name to
+ * detect which tool is being called. The name will match one of the tool names
+ * returned from "describe".
  *
  * @param input The incoming tool request from the LLM
  * @return The servlet's response to the given tool call
@@ -131,10 +137,13 @@ std::expected<pdk::CallToolResult, pdk::Error>
 call(pdk::CallToolRequest &&input);
 
 /**
- * Called by mcpx to understand how and why to use this tool
+ * Called by mcpx to understand how and why to use this tool.
+ * Note: Your servlet configs will not be set when this function is called,
+ * so do not rely on config in this function
  *
- * @return The tool's description
+ * @return The tools' descriptions, supporting multiple tools from a single
+ * servlet.
  */
-std::expected<pdk::ToolDescription, pdk::Error> describe();
+std::expected<pdk::ListToolsResult, pdk::Error> describe();
 
 } // namespace impl
