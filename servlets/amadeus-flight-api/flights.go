@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/url"
+	"strings"
 
 	pdk "github.com/extism/go-pdk"
 )
@@ -51,7 +52,9 @@ func flightOfferSearch(args map[string]any) CallToolResult {
 	q.Set("originLocationCode", args["originLocationCode"].(string))
 	q.Set("destinationLocationCode", args["destinationLocationCode"].(string))
 	q.Set("departureDate", args["departureDate"].(string))
-	q.Set("returnDate", args["returnDate"].(string))
+	if returnDate, hasReturnDate := args["returnDate"]; hasReturnDate {
+		q.Set("returnDate", returnDate.(string))
+	}
 	q.Set("adults", fmt.Sprint(args["adults"]))
 	if children, hasChildren := args["children"]; hasChildren {
 		q.Set("children", fmt.Sprint(children))
@@ -59,7 +62,7 @@ func flightOfferSearch(args map[string]any) CallToolResult {
 	if infants, hasInfants := args["infants"]; hasInfants {
 		q.Set("infants", fmt.Sprint(infants))
 	}
-	q.Set("travelClass", args["travelClass"].(string))
+	q.Set("travelClass", strings.ToUpper(args["travelClass"].(string)))
 	if nonStop, hasNonStop := args["nonStop"]; hasNonStop {
 		q.Set("nonStop", fmt.Sprint(nonStop))
 	}
