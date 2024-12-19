@@ -1,8 +1,14 @@
 #!/bin/bash
+set -eou pipefail
 
 # Function to check if a command exists
 command_exists () {
   command -v "$1" >/dev/null 2>&1
+}
+
+# Function to compare version numbers
+version_gt() {
+  test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1"
 }
 
 missing_deps=0
@@ -10,7 +16,7 @@ missing_deps=0
 # Check for Go
 if ! (command_exists go); then
   missing_deps=1
-  echo "❌ Go (supported version between 1.18 - 1.22) is not installed."
+  echo "❌ Go (supported version between 1.18 - 1.23) is not installed."
   echo ""
   echo "To install Go, visit the official download page:"
   echo "👉 https://go.dev/dl/"
@@ -26,9 +32,12 @@ if ! (command_exists go); then
   echo "🔹 Arch Linux:"
   echo "    sudo pacman -S go"
   echo ""
+  echo "🔹 Windows:"
+  echo "    scoop install go"
+  echo ""
 fi
 
-# Check for the right version of Go, needed by TinyGo (supports go 1.18 - 1.22)
+# Check for the right version of Go, needed by TinyGo (supports go 1.18 - 1.23)
 if (command_exists go); then
   compat=0
   for v in `seq 18 23`; do
@@ -38,15 +47,14 @@ if (command_exists go); then
   done
 
   if [ $compat -eq 0 ]; then
-    echo "❌ Supported Go version is not installed. Must be Go 1.18 - 1.22."
+    echo "❌ Supported Go version is not installed. Must be Go 1.18 - 1.23."
     echo ""
   fi
 fi
 
-
 ARCH=$(arch)
 
-# Check for TinyGo
+# Check for TinyGo and its version
 if ! (command_exists tinygo); then
   missing_deps=1
   echo "❌ TinyGo is not installed."
@@ -61,12 +69,24 @@ if ! (command_exists tinygo); then
   echo "    brew install tinygo"
   echo ""
   echo "🔹 Ubuntu/Debian:"
-  echo "    wget https://github.com/tinygo-org/tinygo/releases/download/v0.31.2/tinygo_0.31.2_$ARCH.deb"
-  echo "    sudo dpkg -i tinygo_0.31.2_$ARCH.deb"
+  echo "    wget https://github.com/tinygo-org/tinygo/releases/download/v0.34.0/tinygo_0.34.0_$ARCH.deb"
+  echo "    sudo dpkg -i tinygo_0.34.0_$ARCH.deb"
   echo ""
   echo "🔹 Arch Linux:"
   echo "    pacman -S extra/tinygo"
   echo ""
+  echo "🔹 Windows:"
+  echo "    scoop install tinygo"
+  echo ""
+else
+  # Check TinyGo version
+  tinygo_version=$(tinygo version | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -n1)
+  if ! version_gt "$tinygo_version" "0.34.0"; then
+    missing_deps=1
+    echo "❌ TinyGo version must be greater than 0.34.0 (current version: $tinygo_version)"
+    echo "Please update TinyGo to a newer version."
+    echo ""
+  fi
 fi
 
 go install golang.org/x/tools/cmd/goimports@latest
