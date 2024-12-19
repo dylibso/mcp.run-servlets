@@ -217,5 +217,5 @@ type ToolDescription struct {
 	Name string `json:"name"`
 }
 
-// Note: leave this in place, as the Go compiler will find the `export` function as the entrypoint.
-func main() {}
+// // Note: leave this in place, as the Go compiler will find the `export` function as the entrypoint.
+// func main() {}

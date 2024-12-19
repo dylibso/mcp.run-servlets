@@ -1,8 +1,10 @@
-xtp plugin build && extism call \
+extism call \
+  --allow-path "data:/" \
   --allow-host "api.assemblyai.com" \
+  --verbose \
   --config ASSEMBLYAI_API_KEY="$ASSEMBLYAI_API_KEY" \
   --wasi \
-  --input "{\"params\":{\"name\":\"transcribe\",\"arguments\":{\"audio\":\"$(base64 hello.mp3 | tr -d '\n')\"}}}" \
+  --input "{\"params\":{\"name\":\"transcribe\",\"arguments\":{\"audio_path\":\"hello.mp3\"}}}" \
   --log-level debug \
   ./dist/plugin.wasm \
   call
