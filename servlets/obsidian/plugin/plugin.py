@@ -27,11 +27,21 @@ class Obsidian:
         self.headers = {"Authorization": f"Bearer {api_key}"}
 
     def get(self, path):
-        return extism.Http.request(f"{self.host}{path}", 'GET', None, self.headers).data_str()
+        extism.log(extism.LogLevel.Info, f"get {self.host}{path}")
+        res = extism.Http.request(f"{self.host}{path}", 'GET', None, self.headers)
+        extism.log(extism.LogLevel.Info, f"-> {res.status_code}")
+        resres = res.data_str()
+        extism.log(extism.LogLevel.Debug, f"-> {resres}")
+        return resres
     
     def post(self, path, body = None, extraheaders = {}):
         headers = self.headers | extraheaders
-        return extism.Http.request(f"{self.host}{path}", 'POST', body, headers).data_str()
+        extism.log(extism.LogLevel.Info, f"post {self.host}{path}")
+        res = extism.Http.request(f"{self.host}{path}", 'POST', body, headers)
+        extism.log(extism.LogLevel.Info, f"-> {res.status_code}")
+        resres = res.data_str()
+        extism.log(extism.LogLevel.Debug, f"-> {resres}")
+        return resres
 
     def list_files_in_vault(self):
         return self.get('/vault/')
@@ -164,8 +174,6 @@ def describe() -> ListToolsResult:
                 description="Lists all files and directories in the root directory of your Obsidian vault.",
                 inputSchema={
                     "type": "object",
-                    "properties": {},
-                    "required": [],
                 },
             ),
             ToolDescription(
@@ -274,8 +282,7 @@ def describe() -> ListToolsResult:
                 description="""Complex search for documents using a JsonLogic query. 
                 Supports standard JsonLogic operators plus 'glob' and 'regexp' for pattern matching. Results must be non-falsy.
 
-                Use this tool when you want to do a complex search, e.g. for all documents with certain tags etc.
-                """,
+                Use this tool when you want to do a complex search, e.g. for all documents with certain tags etc.""",
                 inputSchema={
                     "type": "object",
                     "properties": {

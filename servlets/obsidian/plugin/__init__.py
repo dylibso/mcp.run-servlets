@@ -31,7 +31,6 @@ from pdk_types import (
 # If you support multiple tools, you must switch on the input.params.name to detect which tool is being called.
 @extism.plugin_fn
 def call():
-    extism.log(extism.LogLevel.Error, "beginning of call")
     data = json.loads(extism.input_str())
     res = plugin.call(data)
     extism.output(res)
