@@ -43,8 +43,9 @@ jobs:
       run: |
         curl -L https://raw.githubusercontent.com/extism/js-pdk/main/install.sh | bash
 
-    - name: Install extism-py
+    - name: Install extism-py and uv
       run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
         curl -Ls https://raw.githubusercontent.com/extism/python-pdk/main/install.sh | bash
 
     - name: Install xtp CLI
