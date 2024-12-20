@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/url"
+	"strconv"
 	"strings"
 
 	pdk "github.com/extism/go-pdk"
@@ -52,26 +53,44 @@ func flightOfferSearch(args map[string]any) CallToolResult {
 	q.Set("originLocationCode", args["originLocationCode"].(string))
 	q.Set("destinationLocationCode", args["destinationLocationCode"].(string))
 	q.Set("departureDate", args["departureDate"].(string))
-	if returnDate, hasReturnDate := args["returnDate"]; hasReturnDate {
-		q.Set("returnDate", returnDate.(string))
+
+	if returnDate, hasReturnDate := getString(args, "returnDate"); hasReturnDate {
+		q.Set("returnDate", returnDate)
 	}
-	q.Set("adults", fmt.Sprint(args["adults"]))
-	if children, hasChildren := args["children"]; hasChildren {
-		q.Set("children", fmt.Sprint(children))
+
+	if adults, hasAdults := getNumber(args, "adults"); hasAdults {
+		q.Set("adults", fmt.Sprint(adults))
 	}
-	if infants, hasInfants := args["infants"]; hasInfants {
-		q.Set("infants", fmt.Sprint(infants))
+
+	children, _ := getNumber(args, "children")
+	q.Set("children", fmt.Sprint(children))
+
+	infants, _ := getNumber(args, "infants")
+	q.Set("infants", fmt.Sprint(infants))
+
+	if travelClass, hasTravelClass := getString(args, "travelClass"); hasTravelClass {
+		q.Set("travelClass", strings.ToUpper(travelClass))
+	} else {
+		q.Set("travelClass", "ECONOMY")
 	}
-	q.Set("travelClass", strings.ToUpper(args["travelClass"].(string)))
-	if nonStop, hasNonStop := args["nonStop"]; hasNonStop {
-		q.Set("nonStop", fmt.Sprint(nonStop))
+
+	nonStop, _ := getBool(args, "nonStop")
+
+	q.Set("nonStop", fmt.Sprint(nonStop))
+
+	if currencyCode, hasCurrencyCode := getString(args, "currencyCode"); hasCurrencyCode {
+		q.Set("currencyCode", currencyCode)
+	} else {
+		q.Set("currencyCode", "USD")
 	}
-	q.Set("currencyCode", args["currencyCode"].(string))
-	if maxPrice, hasMaxPrice := args["maxPrice"]; hasMaxPrice {
+
+	if maxPrice, hasMaxPrice := getString(args, "maxPrice"); hasMaxPrice {
 		q.Set("maxPrice", fmt.Sprint(maxPrice))
 	}
-	if max, hasMax := args["max"]; hasMax {
+	if max, hasMax := getNumber(args, "max"); hasMax {
 		q.Set("max", fmt.Sprint(max))
+	} else {
+		q.Set("max", fmt.Sprint(10))
 	}
 
 	req := pdk.NewHTTPRequest(pdk.MethodGet, config.baseUrl+endpoint+"?"+q.Encode())
@@ -84,4 +103,48 @@ func flightOfferSearch(args map[string]any) CallToolResult {
 	}
 
 	return callToolSuccess(string(resp.Body()))
+}
+
+func getNumber(args map[string]any, key string) (float64, bool) {
+	if n, ok := args[key]; ok && n != nil {
+		if i, ok := n.(float64); ok {
+			return i, true
+		}
+		if i, ok := n.(int); ok {
+			return float64(i), true
+		}
+		if i, ok := n.(string); ok {
+			if f, err := strconv.ParseFloat(i, 64); err == nil {
+				return f, true
+			}
+		}
+	}
+	return 0, false
+}
+
+func getBool(args map[string]any, key string) (bool, bool) {
+	if n, ok := args[key]; ok && n != nil {
+		if i, ok := n.(bool); ok {
+			return i, true
+		}
+		if i, ok := n.(string); ok {
+			if f, err := strconv.ParseBool(i); err == nil {
+				return f, true
+			}
+		}
+	}
+	return false, false
+}
+
+func getString(args map[string]any, key string) (string, bool) {
+	if s, ok := args[key]; ok && s != nil {
+		if ss, ok := s.(string); ok {
+			ss = strings.TrimSpace(ss)
+			if ss == "" {
+				return "", false
+			}
+			return ss, ok
+		}
+	}
+	return "", false
 }
