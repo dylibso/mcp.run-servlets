@@ -48,6 +48,8 @@ jobs:
         curl -L https://static.dylibso.com/cli/install.sh -s | bash
 
     - name: Build and test all the servlets
+      env:
+        TENOR_API_KEY: ${{ secrets.TENOR_API_KEY }}
       run: |
         just build
         just test
@@ -55,4 +57,5 @@ jobs:
     - name: Publish all the servlets
       env:
         XTP_TOKEN: ${{ secrets.XTP_TOKEN }}
+        TENOR_API_KEY: ${{ secrets.TENOR_API_KEY }}
       run: just push

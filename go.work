@@ -4,6 +4,7 @@ use (
 	./servlets/crypto-hash
 	./servlets/github
 	./servlets/historical-flight-api
+	./servlets/tenor-gifs
 	./servlets/wordpress
 	./test/testsuite
 )
