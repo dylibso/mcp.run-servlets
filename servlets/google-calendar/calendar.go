@@ -24,10 +24,6 @@ type EventData struct {
 	Start       *EventDateTime  `json:"start"`
 	End         *EventDateTime  `json:"end"`
 	Attendees   []EventAttendee `json:"attendees,omitempty"`
-	Reminders   *EventReminders `json:"reminders,omitempty"`
-	Recurrence  []string        `json:"recurrence,omitempty"`
-	Status      string          `json:"status,omitempty"`
-	Visibility  string          `json:"visibility,omitempty"`
 }
 
 type EventDateTime struct {
@@ -37,18 +33,7 @@ type EventDateTime struct {
 }
 
 type EventAttendee struct {
-	Email          string `json:"email"`
-	ResponseStatus string `json:"responseStatus,omitempty"`
-}
-
-type EventReminders struct {
-	UseDefault bool               `json:"useDefault"`
-	Overrides  []ReminderOverride `json:"overrides,omitempty"`
-}
-
-type ReminderOverride struct {
-	Method  string `json:"method"`
-	Minutes int    `json:"minutes"`
+	Email string `json:"email"`
 }
 
 func NewCalendarClient(accessToken string) *CalendarClient {
@@ -98,10 +83,6 @@ func (c *CalendarClient) ListEvents(args map[string]interface{}) (CallToolResult
 		queryParams = append(queryParams, fmt.Sprintf("timeMax=%s", timeMax))
 	}
 
-	if showDeleted, ok := args["show_deleted"].(bool); ok && showDeleted {
-		queryParams = append(queryParams, "showDeleted=true")
-	}
-
 	endpoint := fmt.Sprintf("/calendars/%s/events?%s", calendarID, strings.Join(queryParams, "&"))
 	resp, err := c.makeRequest(pdk.MethodGet, endpoint, nil)
 	if err != nil {
@@ -124,7 +105,6 @@ func (c *CalendarClient) CreateEvent(args map[string]interface{}) (CallToolResul
 		End:         &EventDateTime{DateTime: getStringArg(args, "end_time", "")},
 	}
 
-	// Handle attendees
 	if attendees, ok := args["attendees"].([]interface{}); ok {
 		event.Attendees = make([]EventAttendee, len(attendees))
 		for i, a := range attendees {
@@ -140,23 +120,6 @@ func (c *CalendarClient) CreateEvent(args map[string]interface{}) (CallToolResul
 	}
 
 	resp, err := c.makeRequest(pdk.MethodPost, fmt.Sprintf("/calendars/%s/events", calendarID), body)
-	if err != nil {
-		return CallToolResult{}, err
-	}
-
-	return CallToolResult{
-		Content: []Content{{Type: ContentTypeText, Text: ptr(string(resp))}},
-	}, nil
-}
-
-func (c *CalendarClient) GetEvent(args map[string]interface{}) (CallToolResult, error) {
-	calendarID := getStringArg(args, "calendar_id", "primary")
-	eventID := getStringArg(args, "event_id", "")
-	if eventID == "" {
-		return CallToolResult{}, errors.New("event_id is required")
-	}
-
-	resp, err := c.makeRequest(pdk.MethodGet, fmt.Sprintf("/calendars/%s/events/%s", calendarID, eventID), nil)
 	if err != nil {
 		return CallToolResult{}, err
 	}
@@ -186,7 +149,6 @@ func (c *CalendarClient) UpdateEvent(args map[string]interface{}) (CallToolResul
 		event.End = &EventDateTime{DateTime: endTime}
 	}
 
-	// Handle attendees
 	if attendees, ok := args["attendees"].([]interface{}); ok {
 		event.Attendees = make([]EventAttendee, len(attendees))
 		for i, a := range attendees {
@@ -202,23 +164,6 @@ func (c *CalendarClient) UpdateEvent(args map[string]interface{}) (CallToolResul
 	}
 
 	resp, err := c.makeRequest(pdk.MethodPut, fmt.Sprintf("/calendars/%s/events/%s", calendarID, eventID), body)
-	if err != nil {
-		return CallToolResult{}, err
-	}
-
-	return CallToolResult{
-		Content: []Content{{Type: ContentTypeText, Text: ptr(string(resp))}},
-	}, nil
-}
-
-func (c *CalendarClient) DeleteEvent(args map[string]interface{}) (CallToolResult, error) {
-	calendarID := getStringArg(args, "calendar_id", "primary")
-	eventID := getStringArg(args, "event_id", "")
-	if eventID == "" {
-		return CallToolResult{}, errors.New("event_id is required")
-	}
-
-	resp, err := c.makeRequest(pdk.MethodDelete, fmt.Sprintf("/calendars/%s/events/%s", calendarID, eventID), nil)
 	if err != nil {
 		return CallToolResult{}, err
 	}
@@ -250,13 +195,6 @@ func getStringArg(args map[string]interface{}, key, defaultValue string) string 
 func getIntArg(args map[string]interface{}, key string, defaultValue int) int {
 	if val, ok := args[key].(float64); ok {
 		return int(val)
-	}
-	return defaultValue
-}
-
-func getBoolArg(args map[string]interface{}, key string, defaultValue bool) bool {
-	if val, ok := args[key].(bool); ok {
-		return val
 	}
 	return defaultValue
 }
