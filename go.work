@@ -3,6 +3,7 @@ go 1.23
 use (
 	./servlets/crypto-hash
 	./servlets/github
+	./servlets/google-calendar
 	./servlets/historical-flight-api
 	./servlets/tenor-gifs
 	./servlets/wordpress
