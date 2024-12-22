@@ -49,6 +49,28 @@ var (
 			},
 		},
 	}
+	ImageSearchTool = ToolDescription{
+		Name: "brave-image-search",
+		Description: "Queries Brave Search and get back image search results from the web. " +
+			"The results contains image and text URLs that can be fetched using the fetch tool.",
+		InputSchema: schema{
+			"type":     "object",
+			"required": []string{"q"},
+			"properties": map[string]SchemaProperty{
+				"q": prop("string", "The user’s search query term. Query can not be empty. Maximum of 400 characters and 50 words in the query."),
+				"country": prop("string", "The search query country, where the results come from. "+
+					"The country string is limited to 2 character country codes of supported countries. Default: US"),
+				"search_lang": prop("string", "The search language preference. "+
+					"The 2 or more character language code for which the search results are provided. Default: en"),
+				"count": prop("number", "The number of search results returned in response. The maximum is 20. "+
+					"The actual number delivered may be less than requested. Combine this parameter with offset to paginate search results. Default: 20"),
+				"safesearch": prop("string", "Filters search results for adult content. "+
+					"off: No filtering is done. moderate: Filters explicit content, like images and videos but allows adult domains in the search results. "+
+					"strict: Drops all adult content from search results. Default: moderate"),
+				"spellcheck": prop("bool", "Whether to spellcheck provided query. If the spellchecker is enabled, the modified query is always used for search. The modified query can be found in altered key from the query response model. Default: true"),
+			},
+		},
+	}
 )
 
 func callWebSearch(args args) (CallToolResult, error) {
@@ -118,6 +140,44 @@ func callWebSearch(args args) (CallToolResult, error) {
 
 	// Call the Brave Search API
 	u := "https://api.search.brave.com/res/v1/web/search?" + params.Encode()
+	req := pdk.NewHTTPRequest(pdk.MethodGet, u)
+	req.SetHeader("X-Subscription-Token", apiKey)
+	res := req.Send()
+
+	pdk.Log(pdk.LogDebug, apiKey)
+
+	return callToolTextSuccess(res.Body()), nil
+}
+
+func callImageSearch(args args) (CallToolResult, error) {
+	params := url.Values{}
+	if q, ok := args.string("q"); ok {
+		params.Set("q", q)
+	} else {
+		return callToolError("missing required argument q"), nil
+	}
+	if country, ok := args.string("country"); ok {
+		params.Set("country", country)
+	}
+
+	if searchLang, ok := args.string("search_lang"); ok {
+		params.Set("search_lang", searchLang)
+	}
+
+	if count, ok := args.number("count"); ok {
+		params.Set("count", strconv.Itoa(int(count)))
+	}
+
+	if safesearch, ok := args.string("safesearch"); ok {
+		params.Set("safesearch", safesearch)
+	}
+
+	if spellcheck, ok := args.bool("spellcheck"); ok {
+		params.Set("spellcheck", strconv.FormatBool(spellcheck))
+	}
+
+	// Call the Brave Search API
+	u := "https://api.search.brave.com/res/v1/images/search?" + params.Encode()
 	req := pdk.NewHTTPRequest(pdk.MethodGet, u)
 	req.SetHeader("X-Subscription-Token", apiKey)
 	res := req.Send()

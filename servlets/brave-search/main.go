@@ -33,8 +33,10 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 	loadKeys()
 	args := args{input.Params.Arguments.(map[string]any)}
 	switch input.Params.Name {
-	case "brave-web-search":
+	case WebSearchTool.Name:
 		return callWebSearch(args)
+	case ImageSearchTool.Name:
+		return callImageSearch(args)
 	default:
 		return callToolError("unknown tool " + input.Params.Name), nil
 	}
@@ -44,6 +46,7 @@ func Describe() (ListToolsResult, error) {
 	return ListToolsResult{
 		Tools: []ToolDescription{
 			WebSearchTool,
+			ImageSearchTool,
 		}}, nil
 
 }
