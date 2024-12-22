@@ -2,6 +2,7 @@ go 1.23
 
 use (
 	./servlets/amadeus-flight-api
+	./servlets/brave-search
 	./servlets/crypto-hash
 	./servlets/github
 	./servlets/google-maps-image
