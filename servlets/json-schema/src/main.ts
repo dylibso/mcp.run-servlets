@@ -35,27 +35,39 @@ function validate(input: CallToolRequest): CallToolResult {
     throw new Error("Missing required argument: document");
   }
 
-  const ajv = new Ajv();
-  const validate = ajv.compile(schema);
-  const valid = validate(document);
+  try {
+    const ajv = new Ajv();
+    const validate = ajv.compile(schema);
+    const valid = validate(document);
 
-  if (!valid) {
-    return {
-      content: [
-        {
-          type: ContentType.Text,
-          mimeType: "application/json",
-          text: JSON.stringify({ valid: false, errors: validate.errors}, null, 2)
-        }
-      ]
+    if (!valid) {
+      return {
+        content: [
+          {
+            type: ContentType.Text,
+            mimeType: "application/json",
+            text: JSON.stringify({ valid: false, errors: validate.errors }, null, 2)
+          }
+        ]
+      }
+    } else {
+      return {
+        content: [
+          {
+            type: ContentType.Text,
+            mimeType: "application/json",
+            text: JSON.stringify({ valid: true }, null, 2)
+          }
+        ]
+      }
     }
-  } else {
+  } catch (e) {
     return {
       content: [
         {
           type: ContentType.Text,
           mimeType: "application/json",
-          text: JSON.stringify({ valid: true }, null, 2)
+          text: JSON.stringify({ valid: false, errors: [{ message: (e as any).message }] }, null, 2)
         }
       ]
     }
