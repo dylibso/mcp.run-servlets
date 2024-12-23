@@ -4,6 +4,7 @@ use (
 	./servlets/amadeus-flight-api
 	./servlets/crypto-hash
 	./servlets/github
+	./servlets/google-maps-image
 	./servlets/historical-flight-api
 	./servlets/tenor-gifs
 	./servlets/wordpress
