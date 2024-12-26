@@ -48,9 +48,72 @@ func testToolCall(name string) {
 		testFetchImage()
 	case "gif-search":
 		testTenor()
+	case "validate":
 	default:
 		xtptest.Assert(fmt.Sprintf("Unable to test '%s'", name), false, "Unknown tool")
 	}
+}
+
+func testJSONValidator() {
+	xtptest.Group("test json-schema validate tool", func() {
+		pdk.Log(pdk.LogDebug, "Testing JSON Schema validate tool")
+
+		arguments := map[string]interface{}{
+			"schema": map[string]interface{}{
+				"$schema": "http://json-schema.org/draft-07/schema#",
+				"title":   "Person",
+				"type":    "object",
+				"properties": map[string]interface{}{
+					"name": map[string]interface{}{
+						"type":        "string",
+						"description": "The person's full name",
+					},
+					"age": map[string]interface{}{
+						"type":        "integer",
+						"minimum":     0,
+						"description": "The person's age in years",
+					},
+					"isStudent": map[string]interface{}{
+						"type":        "boolean",
+						"description": "Whether the person is a student",
+					},
+				},
+				"required": []string{"name", "age"},
+			},
+			"document": map[string]interface{}{
+				"name":      "John Doe",
+				"age":       25,
+				"isStudent": true,
+			},
+		}
+
+		input := CallToolRequest{
+			Method: nil,
+			Params: Params{
+				Arguments: &arguments,
+				Name:      "validate",
+			},
+		}
+
+		inputBytes, err := input.Marshal()
+		if err != nil {
+			xtptest.Assert("Failed to marshal input", false, err.Error())
+		}
+
+		output := xtptest.CallBytes("call", inputBytes)
+		result, err := parseCallToolResult(output)
+		if err != nil {
+			xtptest.Assert("Failed to parse tool call result", false, err.Error())
+		}
+
+		pdk.Log(pdk.LogDebug, fmt.Sprintf("Tool call result: %v", string(output)))
+
+		hasErrored := result.IsError != nil && *result.IsError
+		xtptest.AssertEq("Tool call should not have errored", hasErrored, false)
+		xtptest.AssertEq("Tool call should have one content item", len(result.Content), 1)
+		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeText)
+		xtptest.AssertEq("Validation should pass", *result.Content[0].Text, "true")
+	})
 }
 
 func testTenor() {
