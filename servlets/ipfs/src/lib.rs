@@ -98,7 +98,7 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
                         "description": "The data to store in IPFS"
                     },
                     "pin": {
-                        "type": "bool",
+                        "type": "boolean",
                         "description": "Determines whether the data should be pinned or not",
                     },
                     "endpoint": {
