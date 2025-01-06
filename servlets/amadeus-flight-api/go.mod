@@ -1,4 +1,4 @@
-module github
+module amadeus-flight-api
 
 go 1.23
 

@@ -297,6 +297,40 @@ pub(crate) fn call(input: types::CallToolRequest) -> Result<types::CallToolResul
 }
 
 pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
+    let sorts_schema = serde_json::json!({
+        "type": "object",
+        "oneOf": [
+            {
+                "required": ["property", "direction"],
+                "properties": {
+                    "property": {
+                        "type": "string",
+                        "description": "The name of the property to sort against"
+                    },
+                    "direction": {
+                        "type": "string",
+                        "enum": ["ascending", "descending"],
+                        "description": "The direction to sort"
+                    }
+                }
+            },
+            {
+                "required": ["timestamp", "direction"],
+                "properties": {
+                    "timestamp": {
+                        "type": "string",
+                        "enum": ["created_time", "last_edited_time"],
+                        "description": "The name of the timestamp to sort against"
+                    }, "direction": {
+                        "type": "string",
+                        "enum": ["ascending", "descending"],
+                        "description": "The direction to sort"
+                    }
+                }
+            }
+        ]
+    });
+
     // Define rich text object schema
     let rich_text_schema = serde_json::json!({
         "type": "object",
@@ -495,7 +529,8 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
                         },
                         "sorts": {
                             "type": "array",
-                            "description": "Sort conditions"
+                            "description": "Sort conditions",
+                            "items": sorts_schema,
                         },
                         "start_cursor": {
                             "type": "string",

@@ -2,9 +2,13 @@ go 1.23
 
 use (
 	./servlets/assembly-ai
+	./servlets/amadeus-flight-api
+	./servlets/brave-search
 	./servlets/crypto-hash
 	./servlets/github
+	./servlets/google-maps-image
 	./servlets/historical-flight-api
+	./servlets/tenor-gifs
 	./servlets/wordpress
 	./test/testsuite
 )

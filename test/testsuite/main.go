@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"regexp"
+	"strings"
 
 	xtptest "github.com/dylibso/xtp-test-go"
 	"github.com/extism/go-pdk"
@@ -45,9 +46,139 @@ func testToolCall(name string) {
 		testFetch()
 	case "fetch-image":
 		testFetchImage()
+	case "gif-search":
+		testTenor()
+	case "validate":
 	default:
 		xtptest.Assert(fmt.Sprintf("Unable to test '%s'", name), false, "Unknown tool")
 	}
+}
+
+func testJSONValidator() {
+	xtptest.Group("test json-schema validate tool", func() {
+		pdk.Log(pdk.LogDebug, "Testing JSON Schema validate tool")
+
+		arguments := map[string]interface{}{
+			"schema": map[string]interface{}{
+				"$schema": "http://json-schema.org/draft-07/schema#",
+				"title":   "Person",
+				"type":    "object",
+				"properties": map[string]interface{}{
+					"name": map[string]interface{}{
+						"type":        "string",
+						"description": "The person's full name",
+					},
+					"age": map[string]interface{}{
+						"type":        "integer",
+						"minimum":     0,
+						"description": "The person's age in years",
+					},
+					"isStudent": map[string]interface{}{
+						"type":        "boolean",
+						"description": "Whether the person is a student",
+					},
+				},
+				"required": []string{"name", "age"},
+			},
+			"document": map[string]interface{}{
+				"name":      "John Doe",
+				"age":       25,
+				"isStudent": true,
+			},
+		}
+
+		input := CallToolRequest{
+			Method: nil,
+			Params: Params{
+				Arguments: &arguments,
+				Name:      "validate",
+			},
+		}
+
+		inputBytes, err := input.Marshal()
+		if err != nil {
+			xtptest.Assert("Failed to marshal input", false, err.Error())
+		}
+
+		output := xtptest.CallBytes("call", inputBytes)
+		result, err := parseCallToolResult(output)
+		if err != nil {
+			xtptest.Assert("Failed to parse tool call result", false, err.Error())
+		}
+
+		pdk.Log(pdk.LogDebug, fmt.Sprintf("Tool call result: %v", string(output)))
+
+		hasErrored := result.IsError != nil && *result.IsError
+		xtptest.AssertEq("Tool call should not have errored", hasErrored, false)
+		xtptest.AssertEq("Tool call should have one content item", len(result.Content), 1)
+		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeText)
+		xtptest.AssertEq("Validation should pass", *result.Content[0].Text, "true")
+	})
+}
+
+func testTenor() {
+	xtptest.Group("test tenor gif-search tool", func() {
+		pdk.Log(pdk.LogDebug, "Testing Tenor GIF search tool")
+
+		arguments := map[string]interface{}{
+			"query": "happy",
+			"limit": 2,
+		}
+
+		input := CallToolRequest{
+			Method: nil,
+			Params: Params{
+				Arguments: &arguments,
+				Name:      "gif-search",
+			},
+		}
+
+		inputBytes, err := input.Marshal()
+		if err != nil {
+			xtptest.Assert("Failed to marshal input", false, err.Error())
+		}
+
+		output := xtptest.CallBytes("call", inputBytes)
+		result, err := parseCallToolResult(output)
+		if err != nil {
+			xtptest.Assert("Failed to parse tool call result", false, err.Error())
+		}
+
+		pdk.Log(pdk.LogDebug, fmt.Sprintf("Tool call result: %v", string(output)))
+
+		hasErrored := result.IsError != nil && *result.IsError
+		xtptest.AssertEq("Tool call should not have errored", hasErrored, false)
+
+		// Should have at least 3 content items (header + GIF + attribution for first result)
+		xtptest.Assert("Tool call should have multiple content items", len(result.Content) >= 3, fmt.Sprintf("Got %d content items", len(result.Content)))
+
+		// First content should be text with "Powered by Tenor"
+		xtptest.AssertEq("First content should be text", result.Content[0].Type, ContentTypeText)
+		xtptest.Assert("Header should contain Tenor attribution",
+			strings.Contains(*result.Content[0].Text, "Powered by Tenor"),
+			*result.Content[0].Text)
+
+		// Second content should be an image
+		xtptest.AssertEq("Second content should be image", result.Content[1].Type, ContentTypeImage)
+		xtptest.AssertEq("Image should have GIF mime type", *result.Content[1].MimeType, "image/gif")
+
+		// Validate base64 GIF data
+		imageData, err := base64.StdEncoding.DecodeString(strings.TrimPrefix(*result.Content[1].Data, "data:image/gif;base64,"))
+		if err != nil {
+			xtptest.Assert("Failed to decode GIF data", false, err.Error())
+			return
+		}
+
+		// Check GIF magic number
+		if len(imageData) < 6 {
+			xtptest.Assert("GIF data too short", false, fmt.Sprintf("Got %d bytes", len(imageData)))
+			return
+		}
+		xtptest.AssertEq("Image should start with GIF magic number", string(imageData[:6]), "GIF89a")
+
+		// Third content should be text with attribution
+		xtptest.AssertEq("Third content should be text", result.Content[2].Type, ContentTypeText)
+	})
 }
 
 func testFetch() {

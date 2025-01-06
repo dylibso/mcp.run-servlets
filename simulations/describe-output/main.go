@@ -74,56 +74,36 @@ func validateToolDescription(tool ToolDescription) error {
 		return fmt.Errorf("tool %s: inputSchema.type must be a non-empty string", tool.Name)
 	}
 
-	// If type is object, validate properties
+	// If type is object, validate properties and required fields
 	if typeStr == "object" {
-		// Validate properties
-		props, hasProps := schema["properties"]
-		if !hasProps {
-			return fmt.Errorf("tool %s: object schema missing properties", tool.Name)
-		}
-		properties, ok := props.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("tool %s: inputSchema.properties must be an object", tool.Name)
-		}
-		if len(properties) == 0 {
-			return fmt.Errorf("tool %s: inputSchema.properties cannot be empty", tool.Name)
+		properties, err := parseProperties(schema)
+		if err != nil {
+			return fmt.Errorf("tool %s: %w", tool.Name, err)
 		}
 
-		// Validate each property
-		for propName, prop := range properties {
-			if err := validateProperty(tool.Name, propName, prop); err != nil {
-				return err
+		required, err := parseRequiredFields(schema)
+		if err != nil {
+			return fmt.Errorf("tool %s: %w", tool.Name, err)
+		}
+
+		// If properties is nil, required should also be empty
+		if properties == nil && len(required) > 0 {
+			return fmt.Errorf("tool %s: cannot have required fields without properties", tool.Name)
+		}
+
+		if properties != nil {
+			// Validate each property
+			for propName, prop := range properties {
+				if err := validateProperty(tool.Name, propName, prop); err != nil {
+					return err
+				}
 			}
-		}
-
-		// Validate required fields if present
-		if reqVal, hasRequired := schema["required"]; hasRequired {
-			required, ok := reqVal.([]interface{})
-			if !ok {
-				return fmt.Errorf("tool %s: inputSchema.required must be an array", tool.Name)
-			}
-
 			var missingFields []string
-			seenFields := make(map[string]bool)
-
 			for _, field := range required {
-				fieldStr, ok := field.(string)
-				if !ok {
-					return fmt.Errorf("tool %s: required field names must be strings", tool.Name)
-				}
-
-				// Check for duplicate required fields
-				if seenFields[fieldStr] {
-					return fmt.Errorf("tool %s: duplicate required field: %s", tool.Name, fieldStr)
-				}
-				seenFields[fieldStr] = true
-
-				// Check if field exists in properties
-				if _, exists := properties[fieldStr]; !exists {
-					missingFields = append(missingFields, fieldStr)
+				if _, exists := properties[field]; !exists {
+					missingFields = append(missingFields, field)
 				}
 			}
-
 			if len(missingFields) > 0 {
 				return fmt.Errorf("tool %s: required fields missing from properties: %s",
 					tool.Name,
@@ -133,6 +113,54 @@ func validateToolDescription(tool ToolDescription) error {
 	}
 
 	return nil
+}
+
+// parseProperties returns the properties map if it exists and is valid
+func parseProperties(schema map[string]interface{}) (map[string]interface{}, error) {
+	props, exists := schema["properties"]
+	if !exists || props == nil {
+		return nil, nil
+	}
+
+	properties, ok := props.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("properties must be an object")
+	}
+
+	return properties, nil
+}
+
+// parseRequiredFields returns the required fields if they exist and are valid
+func parseRequiredFields(schema map[string]interface{}) ([]string, error) {
+	req, exists := schema["required"]
+	if !exists || req == nil {
+		return []string{}, nil
+	}
+
+	reqArray, ok := req.([]interface{})
+	if !ok {
+		return []string{}, fmt.Errorf("required fields must be an array")
+	}
+
+	required := make([]string, 0, len(reqArray))
+	seenFields := make(map[string]bool)
+
+	for _, field := range reqArray {
+		fieldStr, ok := field.(string)
+		if !ok {
+			return []string{}, fmt.Errorf("required field names must be strings")
+		}
+
+		// Check for duplicate required fields
+		if seenFields[fieldStr] {
+			return []string{}, fmt.Errorf("duplicate required field: %s", fieldStr)
+		}
+		seenFields[fieldStr] = true
+
+		required = append(required, fieldStr)
+	}
+
+	return required, nil
 }
 
 //go:export test
