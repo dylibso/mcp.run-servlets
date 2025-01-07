@@ -10,42 +10,46 @@ Provides four file system operations:
 - List directory contents
 - Search for files by name pattern
 
-## Usage
+## Tools
 
-Call with one of these operations:
+### read_file
 
-```typescript
-// Read a file
+Reads the contents of a file at the specified path.
+
+```json
 {
-  arguments: {
-    name: "read_file",
-    path: "/path/to/file"
-  }
+  "path": "path/to/file.txt"
 }
+```
 
-// Write to a file
+### write_file
+
+Writes content to a file at the specified path.
+
+```json
 {
-  arguments: {
-    name: "write_file",
-    path: "/path/to/file",
-    content: "content to write"
-  }
+  "path": "path/to/file.txt",
+  "content": "Hello, world!"
 }
+```
 
-// List directory contents
+### list_directory
+
+Lists the contents of a directory, marking items as either [DIR] or [FILE].
+
+```json
 {
-  arguments: {
-    name: "list_directory",
-    path: "/path/to/dir"
-  }
+  "path": "path/to/directory"
 }
+```
 
-// Search for files
+### search_files
+
+Recursively searches for files matching a pattern in the given directory.
+
+```json
 {
-  arguments: {
-    name: "search_files",
-    path: "/path/to/search",
-    pattern: "search-term"
-  }
+  "path": "path/to/search",
+  "pattern": "*.txt"
 }
 ```
