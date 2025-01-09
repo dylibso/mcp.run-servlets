@@ -6,6 +6,9 @@ prepare:
     if [ -f "./prepare.sh" ]; then
         bash ./prepare.sh || exit 1
     fi
+    if [ -f "./pyproject.toml" ]; then
+        uv sync
+    fi
 
 build:
   #!/usr/bin/env bash
