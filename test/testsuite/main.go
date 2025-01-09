@@ -42,6 +42,8 @@ func testToolCall(name string) {
 		testCurrencyConverter()
 	case "eval_js":
 		testEvalJS()
+	case "eval-py":
+		testEvalPy()
 	case "fetch":
 		testFetch()
 	case "fetch-image":
@@ -299,6 +301,41 @@ func testEvalJS() {
 		xtptest.AssertEq("Tool call should have one content item", len(result.Content), 1)
 		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeText)
 		xtptest.AssertEq("Content text should be '2'", *result.Content[0].Text, "2")
+	})
+}
+
+func testEvalPy() {
+	xtptest.Group("test eval-py tool", func() {
+		pdk.Log(pdk.LogDebug, "Testing eval-py tool")
+
+		arguments := map[string]interface{}{"code": "print(1 + 1)"}
+		input := CallToolRequest{
+			Method: nil,
+			Params: Params{
+				Arguments: &arguments,
+				Name:      "eval-py",
+			},
+		}
+
+		inputBytes, err := input.Marshal()
+		if err != nil {
+			xtptest.Assert("Failed to marshal input", false, err.Error())
+		}
+
+		output := xtptest.CallBytes("call", inputBytes)
+		result, err := parseCallToolResult(output)
+		if err != nil {
+			xtptest.Assert("Failed to parse tool call result", false, err.Error())
+		}
+
+		pdk.Log(pdk.LogDebug, fmt.Sprintf("Tool call result: %v", string(output)))
+
+		hasErrored := result.IsError != nil && *result.IsError
+
+		xtptest.AssertEq("Tool call should not have errored", hasErrored, false)
+		xtptest.AssertEq("Tool call should have one content item", len(result.Content), 1)
+		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeText)
+		xtptest.AssertEq("Content text should be '2\n'", *result.Content[0].Text, "2\n")
 	})
 }
 
