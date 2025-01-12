@@ -41,7 +41,7 @@ jobs:
 
     - name: Install extism-js
       run: |
-        curl -L https://raw.githubusercontent.com/extism/js-pdk/main/install.sh | bash
+        curl -L https://raw.githubusercontent.com/extism/js-pdk/main/install.sh | bash -s v1.3.3
 
     - name: Install extism-py and uv
       run: |
