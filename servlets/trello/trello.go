@@ -207,3 +207,22 @@ func (c *TrelloClient) MoveCard(cardID string, listID string, position string) (
 
 	return resp.Body(), nil
 }
+
+// GetListCards returns cards in a list with pagination
+func (c *TrelloClient) GetListCards(listID string, limit int, page int) ([]byte, error) {
+	params := url.Values{}
+
+	// Add pagination parameters
+	if limit > 0 {
+		params.Set("limit", fmt.Sprintf("%d", limit))
+	}
+	if page > 0 {
+		params.Set("page", fmt.Sprintf("%d", page))
+	}
+
+	resp := c.makeRequest(pdk.MethodGet, fmt.Sprintf("/lists/%s/cards", listID), params, nil)
+	if resp.Status() != 200 {
+		return nil, fmt.Errorf("failed to get list cards: %s", resp.Body())
+	}
+	return resp.Body(), nil
+}

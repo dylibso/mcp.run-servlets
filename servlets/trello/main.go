@@ -236,6 +236,28 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 			}},
 		}, nil
 
+	case "get_list_cards":
+		listID, _ := args["list_id"].(string)
+		limit := 50 // default value
+		if l, ok := args["limit"].(float64); ok {
+			limit = int(l)
+		}
+		page := 0 // default value
+		if p, ok := args["page"].(float64); ok {
+			page = int(p)
+		}
+
+		resp, err := client.GetListCards(listID, limit, page)
+		if err != nil {
+			return CallToolResult{}, err
+		}
+		return CallToolResult{
+			Content: []Content{{
+				Type: ContentTypeText,
+				Text: some(string(resp)),
+			}},
+		}, nil
+
 	default:
 		return CallToolResult{}, fmt.Errorf("unknown tool: %s", input.Params.Name)
 	}
@@ -498,6 +520,37 @@ func Describe() (ListToolsResult, error) {
 						},
 					},
 					"required": []string{"token", "card_id", "member_id"},
+				},
+			},
+			{
+				Name:        "get_list_cards",
+				Description: "Get all cards in a list with pagination",
+				InputSchema: map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"token": map[string]interface{}{
+							"type":        "string",
+							"description": "Trello API token",
+						},
+						"list_id": map[string]interface{}{
+							"type":        "string",
+							"description": "ID of the list",
+						},
+						"limit": map[string]interface{}{
+							"type":        "integer",
+							"description": "Maximum number of cards to return per page (default: 50, max: 1000)",
+							"minimum":     1,
+							"maximum":     1000,
+							"default":     50,
+						},
+						"page": map[string]interface{}{
+							"type":        "integer",
+							"description": "Page number to return (0-based)",
+							"minimum":     0,
+							"default":     0,
+						},
+					},
+					"required": []string{"token", "list_id"},
 				},
 			},
 		},
