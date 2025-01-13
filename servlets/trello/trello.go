@@ -56,20 +56,6 @@ func (c *TrelloClient) GetBoardMembers(boardID string) ([]byte, error) {
 	return resp.Body(), nil
 }
 
-// GetBoardLists returns all lists on a board
-func (c *TrelloClient) GetBoardLists(boardID string, filter string) ([]byte, error) {
-	params := url.Values{}
-	if filter != "" {
-		params.Set("filter", filter) // open, closed, all
-	}
-
-	resp := c.makeRequest(pdk.MethodGet, fmt.Sprintf("/boards/%s/lists", boardID), params, nil)
-	if resp.Status() != 200 {
-		return nil, fmt.Errorf("failed to get board lists: %s", resp.Body())
-	}
-	return resp.Body(), nil
-}
-
 // GetCardMembers returns all members assigned to a card
 func (c *TrelloClient) GetCardMembers(cardID string) ([]byte, error) {
 	resp := c.makeRequest(pdk.MethodGet, fmt.Sprintf("/cards/%s/members", cardID), nil, nil)
@@ -81,7 +67,15 @@ func (c *TrelloClient) GetCardMembers(cardID string) ([]byte, error) {
 
 // AddCardMember assigns a member to a card
 func (c *TrelloClient) AddCardMember(cardID string, memberID string) ([]byte, error) {
-	resp := c.makeRequest(pdk.MethodPost, fmt.Sprintf("/cards/%s/idMembers", cardID), nil, []byte(memberID))
+	params := map[string]interface{}{
+		"value": memberID,
+	}
+	body, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := c.makeRequest(pdk.MethodPost, fmt.Sprintf("/cards/%s/idMembers", cardID), nil, body)
 	if resp.Status() != 200 {
 		return nil, fmt.Errorf("failed to add card member: %s", resp.Body())
 	}
@@ -223,6 +217,205 @@ func (c *TrelloClient) GetListCards(listID string, limit int, page int) ([]byte,
 	resp := c.makeRequest(pdk.MethodGet, fmt.Sprintf("/lists/%s/cards", listID), params, nil)
 	if resp.Status() != 200 {
 		return nil, fmt.Errorf("failed to get list cards: %s", resp.Body())
+	}
+	return resp.Body(), nil
+}
+
+// UpdateCard updates a card's properties
+func (c *TrelloClient) UpdateCard(cardID string, args map[string]interface{}) ([]byte, error) {
+	body, err := json.Marshal(args)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := c.makeRequest(pdk.MethodPut, fmt.Sprintf("/cards/%s", cardID), nil, body)
+	if resp.Status() != 200 {
+		return nil, fmt.Errorf("failed to update card: %s", resp.Body())
+	}
+	return resp.Body(), nil
+}
+
+// AddComment adds a comment to a card
+func (c *TrelloClient) AddComment(cardID string, text string) ([]byte, error) {
+	params := url.Values{}
+	params.Set("text", text)
+
+	resp := c.makeRequest(pdk.MethodPost, fmt.Sprintf("/cards/%s/actions/comments", cardID), params, nil)
+	if resp.Status() != 200 {
+		return nil, fmt.Errorf("failed to add comment: %s", resp.Body())
+	}
+	return resp.Body(), nil
+}
+
+// DeleteCard deletes a card
+func (c *TrelloClient) DeleteCard(cardID string) error {
+	resp := c.makeRequest(pdk.MethodDelete, fmt.Sprintf("/cards/%s", cardID), nil, nil)
+	if resp.Status() != 200 {
+		return fmt.Errorf("failed to delete card: %s", resp.Body())
+	}
+	return nil
+}
+
+// ArchiveAllCards archives all cards in a list
+func (c *TrelloClient) ArchiveAllCards(listID string) ([]byte, error) {
+	resp := c.makeRequest(pdk.MethodPost, fmt.Sprintf("/lists/%s/archiveAllCards", listID), nil, nil)
+	if resp.Status() != 200 {
+		return nil, fmt.Errorf("failed to archive cards: %s", resp.Body())
+	}
+	return resp.Body(), nil
+}
+
+// MoveList moves a list to a different board
+func (c *TrelloClient) MoveList(listID string, targetBoardID string) ([]byte, error) {
+	params := url.Values{}
+	params.Set("value", targetBoardID)
+
+	resp := c.makeRequest(pdk.MethodPut, fmt.Sprintf("/lists/%s/idBoard", listID), params, nil)
+	if resp.Status() != 200 {
+		return nil, fmt.Errorf("failed to move list: %s", resp.Body())
+	}
+	return resp.Body(), nil
+}
+
+// GetBoardLists returns all lists on a board with optional filtering
+func (c *TrelloClient) GetBoardLists(boardID string, filter string) ([]byte, error) {
+	params := url.Values{}
+	if filter != "" {
+		params.Set("filter", filter) // open, closed, all
+	}
+
+	resp := c.makeRequest(pdk.MethodGet, fmt.Sprintf("/boards/%s/lists", boardID), params, nil)
+	if resp.Status() != 200 {
+		return nil, fmt.Errorf("failed to get board lists: %s", resp.Body())
+	}
+	return resp.Body(), nil
+}
+
+// GetBoardCards returns all cards on a board
+func (c *TrelloClient) GetBoardCards(boardID string) ([]byte, error) {
+	resp := c.makeRequest(pdk.MethodGet, fmt.Sprintf("/boards/%s/cards", boardID), nil, nil)
+	if resp.Status() != 200 {
+		return nil, fmt.Errorf("failed to get board cards: %s", resp.Body())
+	}
+	return resp.Body(), nil
+}
+
+// Labels
+func (c *TrelloClient) GetBoardLabels(boardID string) ([]byte, error) {
+	resp := c.makeRequest(pdk.MethodGet, fmt.Sprintf("/boards/%s/labels", boardID), nil, nil)
+	if resp.Status() != 200 {
+		return nil, fmt.Errorf("failed to get board labels: %s", resp.Body())
+	}
+	return resp.Body(), nil
+}
+
+func (c *TrelloClient) CreateLabel(boardID string, name string, color string) ([]byte, error) {
+	params := map[string]interface{}{
+		"name":    name,
+		"color":   color,
+		"idBoard": boardID,
+	}
+	body, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := c.makeRequest(pdk.MethodPost, "/labels", nil, body)
+	if resp.Status() != 200 {
+		return nil, fmt.Errorf("failed to create label: %s", resp.Body())
+	}
+	return resp.Body(), nil
+}
+
+func (c *TrelloClient) DeleteLabel(labelID string) error {
+	resp := c.makeRequest(pdk.MethodDelete, fmt.Sprintf("/labels/%s", labelID), nil, nil)
+	if resp.Status() != 200 {
+		return fmt.Errorf("failed to delete label: %s", resp.Body())
+	}
+	return nil
+}
+
+// Checklists
+func (c *TrelloClient) CreateChecklist(cardID string, name string) ([]byte, error) {
+	params := map[string]interface{}{
+		"name":   name,
+		"idCard": cardID,
+	}
+	body, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := c.makeRequest(pdk.MethodPost, "/checklists", nil, body)
+	if resp.Status() != 200 {
+		return nil, fmt.Errorf("failed to create checklist: %s", resp.Body())
+	}
+	return resp.Body(), nil
+}
+
+func (c *TrelloClient) CreateChecklistItem(checklistID string, name string) ([]byte, error) {
+	params := url.Values{}
+	params.Set("name", name)
+
+	resp := c.makeRequest(pdk.MethodPost, fmt.Sprintf("/checklists/%s/checkItems", checklistID), params, nil)
+	if resp.Status() != 200 {
+		return nil, fmt.Errorf("failed to create checklist item: %s", resp.Body())
+	}
+	return resp.Body(), nil
+}
+
+// Comments
+func (c *TrelloClient) GetCardComments(cardID string) ([]byte, error) {
+	params := url.Values{}
+	params.Set("filter", "commentCard")
+
+	resp := c.makeRequest(pdk.MethodGet, fmt.Sprintf("/cards/%s/actions", cardID), params, nil)
+	if resp.Status() != 200 {
+		return nil, fmt.Errorf("failed to get card comments: %s", resp.Body())
+	}
+	return resp.Body(), nil
+}
+
+func (c *TrelloClient) DeleteComment(cardID string, commentID string) error {
+	resp := c.makeRequest(pdk.MethodDelete, fmt.Sprintf("/cards/%s/actions/%s/comments", cardID, commentID), nil, nil)
+	if resp.Status() != 200 {
+		return fmt.Errorf("failed to delete comment: %s", resp.Body())
+	}
+	return nil
+}
+
+func (c *TrelloClient) AddBoardMember(boardID string, email string, fullName string) ([]byte, error) {
+	params := map[string]interface{}{
+		"email":    email,
+		"fullName": fullName,
+	}
+	body, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := c.makeRequest(pdk.MethodPut, fmt.Sprintf("/boards/%s/members", boardID), nil, body)
+	if resp.Status() != 200 {
+		return nil, fmt.Errorf("failed to add board member: %s", resp.Body())
+	}
+	return resp.Body(), nil
+}
+
+func (c *TrelloClient) RemoveBoardMember(boardID string, memberID string) error {
+	resp := c.makeRequest(pdk.MethodDelete, fmt.Sprintf("/boards/%s/members/%s", boardID, memberID), nil, nil)
+	if resp.Status() != 200 {
+		return fmt.Errorf("failed to remove board member: %s", resp.Body())
+	}
+	return nil
+}
+
+func (c *TrelloClient) AddCardComment(cardID string, text string) ([]byte, error) {
+	params := url.Values{}
+	params.Set("text", text)
+
+	resp := c.makeRequest(pdk.MethodPost, fmt.Sprintf("/cards/%s/actions/comments", cardID), params, nil)
+	if resp.Status() != 200 {
+		return nil, fmt.Errorf("failed to add comment: %s", resp.Body())
 	}
 	return resp.Body(), nil
 }

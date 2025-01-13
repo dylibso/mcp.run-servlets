@@ -258,6 +258,196 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 			}},
 		}, nil
 
+	case "get_board_cards":
+		boardID, _ := args["board_id"].(string)
+
+		resp, err := client.GetBoardCards(boardID)
+		if err != nil {
+			return CallToolResult{}, err
+		}
+		return CallToolResult{
+			Content: []Content{{
+				Type: ContentTypeText,
+				Text: some(string(resp)),
+			}},
+		}, nil
+
+	case "archive_list_cards":
+		listID, _ := args["list_id"].(string)
+
+		resp, err := client.ArchiveAllCards(listID)
+		if err != nil {
+			return CallToolResult{}, err
+		}
+		return CallToolResult{
+			Content: []Content{{
+				Type: ContentTypeText,
+				Text: some(string(resp)),
+			}},
+		}, nil
+
+	case "move_list":
+		listID, _ := args["list_id"].(string)
+		boardID, _ := args["board_id"].(string)
+
+		resp, err := client.MoveList(listID, boardID)
+		if err != nil {
+			return CallToolResult{}, err
+		}
+		return CallToolResult{
+			Content: []Content{{
+				Type: ContentTypeText,
+				Text: some(string(resp)),
+			}},
+		}, nil
+
+	case "get_board_labels":
+		boardID, _ := args["board_id"].(string)
+
+		resp, err := client.GetBoardLabels(boardID)
+		if err != nil {
+			return CallToolResult{}, err
+		}
+		return CallToolResult{
+			Content: []Content{{
+				Type: ContentTypeText,
+				Text: some(string(resp)),
+			}},
+		}, nil
+
+	case "create_label":
+		boardID, _ := args["board_id"].(string)
+		name, _ := args["name"].(string)
+		color, _ := args["color"].(string)
+
+		resp, err := client.CreateLabel(boardID, name, color)
+		if err != nil {
+			return CallToolResult{}, err
+		}
+		return CallToolResult{
+			Content: []Content{{
+				Type: ContentTypeText,
+				Text: some(string(resp)),
+			}},
+		}, nil
+
+	case "delete_label":
+		labelID, _ := args["label_id"].(string)
+
+		err := client.DeleteLabel(labelID)
+		if err != nil {
+			return CallToolResult{}, err
+		}
+		return CallToolResult{
+			Content: []Content{{
+				Type: ContentTypeText,
+				Text: some("Label deleted successfully"),
+			}},
+		}, nil
+
+	case "create_checklist":
+		cardID, _ := args["card_id"].(string)
+		name, _ := args["name"].(string)
+
+		resp, err := client.CreateChecklist(cardID, name)
+		if err != nil {
+			return CallToolResult{}, err
+		}
+		return CallToolResult{
+			Content: []Content{{
+				Type: ContentTypeText,
+				Text: some(string(resp)),
+			}},
+		}, nil
+
+	case "add_checklist_item":
+		checklistID, _ := args["checklist_id"].(string)
+		name, _ := args["name"].(string)
+
+		resp, err := client.CreateChecklistItem(checklistID, name)
+		if err != nil {
+			return CallToolResult{}, err
+		}
+		return CallToolResult{
+			Content: []Content{{
+				Type: ContentTypeText,
+				Text: some(string(resp)),
+			}},
+		}, nil
+
+	case "get_card_comments":
+		cardID, _ := args["card_id"].(string)
+
+		resp, err := client.GetCardComments(cardID)
+		if err != nil {
+			return CallToolResult{}, err
+		}
+		return CallToolResult{
+			Content: []Content{{
+				Type: ContentTypeText,
+				Text: some(string(resp)),
+			}},
+		}, nil
+
+	case "delete_comment":
+		cardID, _ := args["card_id"].(string)
+		commentID, _ := args["comment_id"].(string)
+
+		err := client.DeleteComment(cardID, commentID)
+		if err != nil {
+			return CallToolResult{}, err
+		}
+		return CallToolResult{
+			Content: []Content{{
+				Type: ContentTypeText,
+				Text: some("Comment deleted successfully"),
+			}},
+		}, nil
+
+	case "add_board_member":
+		boardID, _ := args["board_id"].(string)
+		email, _ := args["email"].(string)
+		fullName, _ := args["full_name"].(string)
+
+		resp, err := client.AddBoardMember(boardID, email, fullName)
+		if err != nil {
+			return CallToolResult{}, err
+		}
+		return CallToolResult{
+			Content: []Content{{
+				Type: ContentTypeText,
+				Text: some(string(resp)),
+			}},
+		}, nil
+
+	case "remove_board_member":
+		boardID, _ := args["board_id"].(string)
+		memberID, _ := args["member_id"].(string)
+
+		err := client.RemoveBoardMember(boardID, memberID)
+		if err != nil {
+			return CallToolResult{}, err
+		}
+		return CallToolResult{
+			Content: []Content{{
+				Type: ContentTypeText,
+				Text: some("Member removed successfully"),
+			}},
+		}, nil
+	case "add_comment":
+		cardID, _ := args["card_id"].(string)
+		text, _ := args["text"].(string)
+
+		resp, err := client.AddCardComment(cardID, text)
+		if err != nil {
+			return CallToolResult{}, err
+		}
+		return CallToolResult{
+			Content: []Content{{
+				Type: ContentTypeText,
+				Text: some(string(resp)),
+			}},
+		}, nil
 	default:
 		return CallToolResult{}, fmt.Errorf("unknown tool: %s", input.Params.Name)
 	}
@@ -551,6 +741,237 @@ func Describe() (ListToolsResult, error) {
 						},
 					},
 					"required": []string{"token", "list_id"},
+				},
+			},
+			{
+				Name:        "get_board_labels",
+				Description: "Get all labels on a board",
+				InputSchema: map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"token": map[string]interface{}{
+							"type":        "string",
+							"description": "Trello API token",
+						},
+						"board_id": map[string]interface{}{
+							"type":        "string",
+							"description": "ID of the board",
+						},
+					},
+					"required": []string{"token", "board_id"},
+				},
+			},
+			{
+				Name:        "create_label",
+				Description: "Create a new label on a board",
+				InputSchema: map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"token": map[string]interface{}{
+							"type":        "string",
+							"description": "Trello API token",
+						},
+						"board_id": map[string]interface{}{
+							"type":        "string",
+							"description": "ID of the board",
+						},
+						"name": map[string]interface{}{
+							"type":        "string",
+							"description": "Name of the label",
+						},
+						"color": map[string]interface{}{
+							"type":        "string",
+							"description": "Color of the label (red, yellow, green, blue, purple, orange, black)",
+							"enum":        []string{"red", "yellow", "green", "blue", "purple", "orange", "black"},
+						},
+					},
+					"required": []string{"token", "board_id", "name", "color"},
+				},
+			},
+			{
+				Name:        "create_checklist",
+				Description: "Create a new checklist on a card",
+				InputSchema: map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"token": map[string]interface{}{
+							"type":        "string",
+							"description": "Trello API token",
+						},
+						"card_id": map[string]interface{}{
+							"type":        "string",
+							"description": "ID of the card",
+						},
+						"name": map[string]interface{}{
+							"type":        "string",
+							"description": "Name of the checklist",
+						},
+					},
+					"required": []string{"token", "card_id", "name"},
+				},
+			},
+			{
+				Name:        "add_checklist_item",
+				Description: "Add an item to a checklist",
+				InputSchema: map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"token": map[string]interface{}{
+							"type":        "string",
+							"description": "Trello API token",
+						},
+						"checklist_id": map[string]interface{}{
+							"type":        "string",
+							"description": "ID of the checklist",
+						},
+						"name": map[string]interface{}{
+							"type":        "string",
+							"description": "Name of the checklist item",
+						},
+					},
+					"required": []string{"token", "checklist_id", "name"},
+				},
+			},
+			{
+				Name:        "get_card_comments",
+				Description: "Get all comments on a card",
+				InputSchema: map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"token": map[string]interface{}{
+							"type":        "string",
+							"description": "Trello API token",
+						},
+						"card_id": map[string]interface{}{
+							"type":        "string",
+							"description": "ID of the card",
+						},
+					},
+					"required": []string{"token", "card_id"},
+				},
+			},
+			{
+				Name:        "get_board_members",
+				Description: "Get all members of a board",
+				InputSchema: map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"token": map[string]interface{}{
+							"type":        "string",
+							"description": "Trello API token",
+						},
+						"board_id": map[string]interface{}{
+							"type":        "string",
+							"description": "ID of the board",
+						},
+					},
+					"required": []string{"token", "board_id"},
+				},
+			},
+			{
+				Name:        "add_board_member",
+				Description: "Add a member to a board by email",
+				InputSchema: map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"token": map[string]interface{}{
+							"type":        "string",
+							"description": "Trello API token",
+						},
+						"board_id": map[string]interface{}{
+							"type":        "string",
+							"description": "ID of the board",
+						},
+						"email": map[string]interface{}{
+							"type":        "string",
+							"description": "Email of the user to add",
+						},
+						"full_name": map[string]interface{}{
+							"type":        "string",
+							"description": "Full name of the user",
+						},
+					},
+					"required": []string{"token", "board_id", "email", "full_name"},
+				},
+			},
+			{
+				Name:        "move_list",
+				Description: "Move a list to a different board",
+				InputSchema: map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"token": map[string]interface{}{
+							"type":        "string",
+							"description": "Trello API token",
+						},
+						"list_id": map[string]interface{}{
+							"type":        "string",
+							"description": "ID of the list to move",
+						},
+						"board_id": map[string]interface{}{
+							"type":        "string",
+							"description": "ID of the target board",
+						},
+					},
+					"required": []string{"token", "list_id", "board_id"},
+				},
+			},
+			{
+				Name:        "archive_list_cards",
+				Description: "Archive all cards in a list",
+				InputSchema: map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"token": map[string]interface{}{
+							"type":        "string",
+							"description": "Trello API token",
+						},
+						"list_id": map[string]interface{}{
+							"type":        "string",
+							"description": "ID of the list",
+						},
+					},
+					"required": []string{"token", "list_id"},
+				},
+			},
+			{
+				Name:        "get_board_cards",
+				Description: "Get all cards on a board",
+				InputSchema: map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"token": map[string]interface{}{
+							"type":        "string",
+							"description": "Trello API token",
+						},
+						"board_id": map[string]interface{}{
+							"type":        "string",
+							"description": "ID of the board",
+						},
+					},
+					"required": []string{"token", "board_id"},
+				},
+			},
+			{
+				Name:        "add_comment",
+				Description: "Add a comment to a card",
+				InputSchema: map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"token": map[string]interface{}{
+							"type":        "string",
+							"description": "Trello API token",
+						},
+						"card_id": map[string]interface{}{
+							"type":        "string",
+							"description": "ID of the card",
+						},
+						"text": map[string]interface{}{
+							"type":        "string",
+							"description": "Text of the comment",
+						},
+					},
+					"required": []string{"token", "card_id", "text"},
 				},
 			},
 		},
