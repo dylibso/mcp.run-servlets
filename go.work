@@ -8,6 +8,7 @@ use (
 	./servlets/google-maps-image
 	./servlets/historical-flight-api
 	./servlets/tenor-gifs
+	./servlets/trello
 	./servlets/wordpress
 	./test/testsuite
 )
