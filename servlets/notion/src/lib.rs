@@ -279,6 +279,113 @@ pub(crate) fn call(input: types::CallToolRequest) -> Result<types::CallToolResul
 
             make_notion_request("/search", "POST", Some(Value::Object(search_body)), &token)?
         }
+        "notion_create_page" => {
+            let parent = args
+                .get("parent")
+                .ok_or_else(|| Error::msg("parent object is required"))?;
+            let properties = args
+                .get("properties")
+                .ok_or_else(|| Error::msg("properties object is required"))?;
+
+            let mut body = serde_json::Map::new();
+            body.insert("parent".to_string(), parent.clone());
+            body.insert("properties".to_string(), properties.clone());
+
+            if let Some(children) = args.get("children") {
+                body.insert("children".to_string(), children.clone());
+            }
+            if let Some(icon) = args.get("icon") {
+                body.insert("icon".to_string(), icon.clone());
+            }
+            if let Some(cover) = args.get("cover") {
+                body.insert("cover".to_string(), cover.clone());
+            }
+
+            make_notion_request("/pages", "POST", Some(Value::Object(body)), &token)?
+        }
+        "notion_update_block" => {
+            let block_id = args
+                .get("block_id")
+                .and_then(|v| v.as_str())
+                .ok_or_else(|| Error::msg("block_id is required and must be a string"))?;
+
+            let content = args
+                .get("content")
+                .ok_or_else(|| Error::msg("content object is required"))?;
+
+            make_notion_request(
+                &format!("/blocks/{}", block_id),
+                "PATCH",
+                Some(content.clone()),
+                &token,
+            )?
+        }
+        "notion_list_block_children" => {
+            let block_id = args
+                .get("block_id")
+                .and_then(|v| v.as_str())
+                .ok_or_else(|| Error::msg("block_id is required and must be a string"))?;
+
+            let mut params = Vec::new();
+            if let Some(start_cursor) = args.get("start_cursor").and_then(|v| v.as_str()) {
+                params.push(("start_cursor", start_cursor.to_string()));
+            }
+            if let Some(page_size) = args.get("page_size").and_then(|v| v.as_u64()) {
+                params.push(("page_size", page_size.to_string()));
+            }
+
+            let query_string = if !params.is_empty() {
+                format!(
+                    "?{}",
+                    params
+                        .iter()
+                        .map(|(k, v)| format!("{}={}", k, v))
+                        .collect::<Vec<_>>()
+                        .join("&")
+                )
+            } else {
+                String::new()
+            };
+
+            make_notion_request(
+                &format!("/blocks/{}/children{}", block_id, query_string),
+                "GET",
+                None,
+                &token,
+            )?
+        }
+        "notion_retrieve_database" => {
+            let database_id = args
+                .get("database_id")
+                .and_then(|v| v.as_str())
+                .ok_or_else(|| Error::msg("database_id is required and must be a string"))?;
+
+            make_notion_request(&format!("/databases/{}", database_id), "GET", None, &token)?
+        }
+        "notion_update_database" => {
+            let database_id = args
+                .get("database_id")
+                .and_then(|v| v.as_str())
+                .ok_or_else(|| Error::msg("database_id is required and must be a string"))?;
+
+            let mut body = serde_json::Map::new();
+            if let Some(title) = args.get("title") {
+                body.insert("title".to_string(), title.clone());
+            }
+            if let Some(properties) = args.get("properties") {
+                body.insert("properties".to_string(), properties.clone());
+            }
+            if let Some(description) = args.get("description") {
+                body.insert("description".to_string(), description.clone());
+            }
+
+            make_notion_request(
+                &format!("/databases/{}", database_id),
+                "PATCH",
+                Some(Value::Object(body)),
+                &token,
+            )?
+        }
 
         // Error for unknown tool
         _ => return Err(Error::msg(format!("Unknown tool: {}", input.params.name))),
@@ -300,35 +407,35 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
     let sorts_schema = serde_json::json!({
         "type": "object",
         "oneOf": [
-            {
-                "required": ["property", "direction"],
-                "properties": {
-                    "property": {
-                        "type": "string",
-                        "description": "The name of the property to sort against"
-                    },
-                    "direction": {
-                        "type": "string",
-                        "enum": ["ascending", "descending"],
-                        "description": "The direction to sort"
-                    }
-                }
-            },
-            {
-                "required": ["timestamp", "direction"],
-                "properties": {
-                    "timestamp": {
-                        "type": "string",
-                        "enum": ["created_time", "last_edited_time"],
-                        "description": "The name of the timestamp to sort against"
-                    }, "direction": {
-                        "type": "string",
-                        "enum": ["ascending", "descending"],
-                        "description": "The direction to sort"
-                    }
-                }
-            }
-        ]
+        {
+            "required": ["property", "direction"],
+            "properties": {
+            "property": {
+            "type": "string",
+            "description": "The name of the property to sort against"
+        },
+        "direction": {
+        "type": "string",
+        "enum": ["ascending", "descending"],
+        "description": "The direction to sort"
+    }
+    }
+    },
+        {
+            "required": ["timestamp", "direction"],
+        "properties": {
+        "timestamp": {
+        "type": "string",
+        "enum": ["created_time", "last_edited_time"],
+        "description": "The name of the timestamp to sort against"
+    }, "direction": {
+        "type": "string",
+        "enum": ["ascending", "descending"],
+        "description": "The direction to sort"
+    }
+    }
+    }
+    ]
     });
 
     // Define rich text object schema
@@ -336,54 +443,54 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
         "type": "object",
         "description": "A rich text object.",
         "properties": {
-            "type": {
-                "type": "string",
-                "description": "The type of this rich text object.",
-                "enum": ["text", "mention", "equation"]
-            },
-            "text": {
-                "type": "object",
-                "description": "Object containing text content and optional link info. Required if type is 'text'.",
-                "properties": {
-                    "content": {
-                        "type": "string",
-                        "description": "The actual text content."
-                    },
-                    "link": {
-                        "type": "object",
-                        "description": "Optional link object with a 'url' field.",
-                        "properties": {
-                            "url": {
-                                "type": "string",
-                                "description": "The URL the text links to."
-                            }
-                        }
-                    }
-                }
-            },
-            "annotations": {
-                "type": "object",
-                "description": "Styling information for the text.",
-                "properties": {
-                    "bold": { "type": "boolean" },
-                    "italic": { "type": "boolean" },
-                    "strikethrough": { "type": "boolean" },
-                    "underline": { "type": "boolean" },
-                    "code": { "type": "boolean" },
-                    "color": {
-                        "type": "string",
-                        "description": "Color for the text.",
-                        "enum": [
-                            "default", "blue", "blue_background", "brown", "brown_background",
-                            "gray", "gray_background", "green", "green_background",
-                            "orange", "orange_background", "pink", "pink_background",
-                            "purple", "purple_background", "red", "red_background",
-                            "yellow", "yellow_background"
-                        ]
-                    }
-                }
-            }
-        },
+        "type": {
+        "type": "string",
+        "description": "The type of this rich text object.",
+        "enum": ["text", "mention", "equation"]
+    },
+        "text": {
+        "type": "object",
+        "description": "Object containing text content and optional link info. Required if type is 'text'.",
+        "properties": {
+        "content": {
+        "type": "string",
+        "description": "The actual text content."
+    },
+        "link": {
+        "type": "object",
+        "description": "Optional link object with a 'url' field.",
+        "properties": {
+        "url": {
+        "type": "string",
+        "description": "The URL the text links to."
+    }
+    }
+    }
+    }
+    },
+        "annotations": {
+        "type": "object",
+        "description": "Styling information for the text.",
+        "properties": {
+        "bold": { "type": "boolean" },
+        "italic": { "type": "boolean" },
+        "strikethrough": { "type": "boolean" },
+        "underline": { "type": "boolean" },
+        "code": { "type": "boolean" },
+        "color": {
+        "type": "string",
+        "description": "Color for the text.",
+        "enum": [
+        "default", "blue", "blue_background", "brown", "brown_background",
+        "gray", "gray_background", "green", "green_background",
+        "orange", "orange_background", "pink", "pink_background",
+        "purple", "purple_background", "red", "red_background",
+        "yellow", "yellow_background"
+    ]
+    }
+    }
+    }
+    },
         "required": ["type"]
     });
 
@@ -392,26 +499,26 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
         "type": "object",
         "description": "A Notion block object.",
         "properties": {
-            "object": {
-                "type": "string",
-                "description": "Should be 'block'.",
-                "enum": ["block"]
-            },
-            "type": {
-                "type": "string",
-                "description": "Type of the block.",
-                "enum": [
-                    "paragraph", "heading_1", "heading_2", "heading_3",
-                    "bulleted_list_item", "numbered_list_item", "to_do",
-                    "toggle", "child_page", "child_database", "embed",
-                    "callout", "quote", "equation", "divider",
-                    "table_of_contents", "column", "column_list",
-                    "link_preview", "synced_block", "template",
-                    "link_to_page", "audio", "bookmark", "breadcrumb",
-                    "code", "file", "image", "pdf", "video"
-                ]
-            }
-        },
+        "object": {
+        "type": "string",
+        "description": "Should be 'block'.",
+        "enum": ["block"]
+    },
+        "type": {
+        "type": "string",
+        "description": "Type of the block.",
+        "enum": [
+        "paragraph", "heading_1", "heading_2", "heading_3",
+        "bulleted_list_item", "numbered_list_item", "to_do",
+        "toggle", "child_page", "child_database", "embed",
+        "callout", "quote", "equation", "divider",
+        "table_of_contents", "column", "column_list",
+        "link_preview", "synced_block", "template",
+        "link_to_page", "audio", "bookmark", "breadcrumb",
+        "code", "file", "image", "pdf", "video"
+    ]
+    }
+    },
         "required": ["object", "type"]
     });
 
@@ -424,16 +531,16 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
                 input_schema: serde_json::json!({
                     "type": "object",
                     "properties": {
-                        "block_id": {
-                            "type": "string",
-                            "description": "The ID of the parent block. ".to_string() + COMMON_ID_DESCRIPTION
-                        },
-                        "children": {
-                            "type": "array",
-                            "description": "Array of block objects to append. Each block must follow the Notion block schema.",
-                            "items": block_schema
-                        }
-                    },
+                    "block_id": {
+                    "type": "string",
+                    "description": "The ID of the parent block. ".to_string() + COMMON_ID_DESCRIPTION
+                },
+                    "children": {
+                    "type": "array",
+                    "description": "Array of block objects to append. Each block must follow the Notion block schema.",
+                    "items": block_schema
+                }
+                },
                     "required": ["block_id", "children"],
                     "additionalProperties": false
                 }).as_object().unwrap().clone(),
@@ -444,11 +551,11 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
                 input_schema: serde_json::json!({
                     "type": "object",
                     "properties": {
-                        "block_id": {
-                            "type": "string",
-                            "description": "The ID of the block to retrieve. ".to_string() + COMMON_ID_DESCRIPTION
-                        }
-                    },
+                    "block_id": {
+                    "type": "string",
+                    "description": "The ID of the block to retrieve. ".to_string() + COMMON_ID_DESCRIPTION
+                }
+                },
                     "required": ["block_id"],
                     "additionalProperties": false
                 }).as_object().unwrap().clone(),
@@ -460,11 +567,11 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
                 input_schema: serde_json::json!({
                     "type": "object",
                     "properties": {
-                        "page_id": {
-                            "type": "string",
-                            "description": "The ID of the page to retrieve. ".to_string() + COMMON_ID_DESCRIPTION
-                        }
-                    },
+                    "page_id": {
+                    "type": "string",
+                    "description": "The ID of the page to retrieve. ".to_string() + COMMON_ID_DESCRIPTION
+                }
+                },
                     "required": ["page_id"],
                     "additionalProperties": false
                 }).as_object().unwrap().clone(),
@@ -475,15 +582,15 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
                 input_schema: serde_json::json!({
                     "type": "object",
                     "properties": {
-                        "page_id": {
-                            "type": "string",
-                            "description": "The ID of the page or database item to update. ".to_string() + COMMON_ID_DESCRIPTION
-                        },
-                        "properties": {
-                            "type": "object",
-                            "description": "Properties to update. These correspond to the columns or fields in the database."
-                        }
-                    },
+                    "page_id": {
+                    "type": "string",
+                    "description": "The ID of the page or database item to update. ".to_string() + COMMON_ID_DESCRIPTION
+                },
+                    "properties": {
+                    "type": "object",
+                    "description": "Properties to update. These correspond to the columns or fields in the database."
+                }
+                },
                     "required": ["page_id", "properties"],
                     "additionalProperties": false
                 }).as_object().unwrap().clone(),
@@ -495,20 +602,20 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
                 input_schema: serde_json::json!({
                     "type": "object",
                     "properties": {
-                        "parent": {
-                            "type": "object",
-                            "description": "Parent object of the database"
-                        },
-                        "title": {
-                            "type": "array",
-                            "description": "Title of database as it appears in Notion. An array of rich text objects.",
-                            "items": rich_text_schema
-                        },
-                        "properties": {
-                            "type": "object",
-                            "description": "Property schema of database. The keys are the names of properties as they appear in Notion and the values are property schema objects."
-                        }
-                    },
+                    "parent": {
+                    "type": "object",
+                    "description": "Parent object of the database"
+                },
+                    "title": {
+                    "type": "array",
+                    "description": "Title of database as it appears in Notion. An array of rich text objects.",
+                    "items": rich_text_schema
+                },
+                    "properties": {
+                    "type": "object",
+                    "description": "Property schema of database. The keys are the names of properties as they appear in Notion and the values are property schema objects."
+                }
+                },
                     "required": ["parent", "title", "properties"],
                     "additionalProperties": false
                 }).as_object().unwrap().clone(),
@@ -519,28 +626,28 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
                 input_schema: serde_json::json!({
                     "type": "object",
                     "properties": {
-                        "database_id": {
-                            "type": "string",
-                            "description": "The ID of the database to query. ".to_string() + COMMON_ID_DESCRIPTION
-                        },
-                        "filter": {
-                            "type": "object",
-                            "description": "Filter conditions"
-                        },
-                        "sorts": {
-                            "type": "array",
-                            "description": "Sort conditions",
-                            "items": sorts_schema,
-                        },
-                        "start_cursor": {
-                            "type": "string",
-                            "description": "Pagination cursor for next page of results"
-                        },
-                        "page_size": {
-                            "type": "integer",
-                            "description": "Number of results per page (max 100)"
-                        }
-                    },
+                    "database_id": {
+                    "type": "string",
+                    "description": "The ID of the database to query. ".to_string() + COMMON_ID_DESCRIPTION
+                },
+                    "filter": {
+                    "type": "object",
+                    "description": "Filter conditions"
+                },
+                    "sorts": {
+                    "type": "array",
+                    "description": "Sort conditions",
+                    "items": sorts_schema,
+                },
+                    "start_cursor": {
+                    "type": "string",
+                    "description": "Pagination cursor for next page of results"
+                },
+                    "page_size": {
+                    "type": "integer",
+                    "description": "Number of results per page (max 100)"
+                }
+                },
                     "required": ["database_id"],
                     "additionalProperties": false
                 }).as_object().unwrap().clone(),
@@ -552,15 +659,15 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
                 input_schema: serde_json::json!({
                     "type": "object",
                     "properties": {
-                        "start_cursor": {
-                            "type": "string",
-                            "description": "Pagination start cursor for listing users"
-                        },
-                        "page_size": {
-                            "type": "integer",
-                            "description": "Number of users to retrieve (max 100)"
-                        }
-                    },
+                    "start_cursor": {
+                    "type": "string",
+                    "description": "Pagination start cursor for listing users"
+                },
+                    "page_size": {
+                    "type": "integer",
+                    "description": "Number of users to retrieve (max 100)"
+                }
+                },
                     "additionalProperties": false
                 }).as_object().unwrap().clone(),
             },
@@ -571,26 +678,26 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
                 input_schema: serde_json::json!({
                     "type": "object",
                     "properties": {
-                        "parent": {
-                            "type": "object",
-                            "description": "Parent object that specifies the page to comment on",
-                            "properties": {
-                                "page_id": {
-                                    "type": "string",
-                                    "description": "The ID of the page to comment on. ".to_string() + COMMON_ID_DESCRIPTION
-                                }
-                            }
-                        },
-                        "discussion_id": {
-                            "type": "string",
-                            "description": "The ID of an existing discussion thread to add a comment to. ".to_string() + COMMON_ID_DESCRIPTION
-                        },
-                        "rich_text": {
-                            "type": "array",
-                            "description": "Array of rich text objects representing the comment content.",
-                            "items": rich_text_schema
-                        }
-                    },
+                    "parent": {
+                    "type": "object",
+                    "description": "Parent object that specifies the page to comment on",
+                    "properties": {
+                    "page_id": {
+                    "type": "string",
+                    "description": "The ID of the page to comment on. ".to_string() + COMMON_ID_DESCRIPTION
+                }
+                }
+                },
+                    "discussion_id": {
+                    "type": "string",
+                    "description": "The ID of an existing discussion thread to add a comment to. ".to_string() + COMMON_ID_DESCRIPTION
+                },
+                    "rich_text": {
+                    "type": "array",
+                    "description": "Array of rich text objects representing the comment content.",
+                    "items": rich_text_schema
+                }
+                },
                     "required": ["rich_text"],
                     "additionalProperties": false
                 }).as_object().unwrap().clone(),
@@ -602,50 +709,171 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
                 input_schema: serde_json::json!({
                     "type": "object",
                     "properties": {
-                        "query": {
-                            "type": "string",
-                            "description": "Text to search for in page or database titles"
-                        },
-                        "filter": {
-                            "type": "object",
-                            "description": "Filter results by object type (page or database)",
-                            "properties": {
-                                "property": {
-                                    "type": "string",
-                                    "description": "Must be 'object'"
-                                },
-                                "value": {
-                                    "type": "string",
-                                    "description": "Either 'page' or 'database'"
-                                }
-                            }
-                        },
-                        "sort": {
-                            "type": "object",
-                            "description": "Sort configuration for search results",
-                            "properties": {
-                                "direction": {
-                                    "type": "string",
-                                    "enum": ["ascending", "descending"]
-                                },
-                                "timestamp": {
-                                    "type": "string",
-                                    "enum": ["last_edited_time"]
-                                }
-                            }
-                        },
-                        "start_cursor": {
-                            "type": "string",
-                            "description": "Pagination cursor"
-                        },
-                        "page_size": {
-                            "type": "integer",
-                            "description": "Number of results to return (max 100)"
-                        }
-                    },
+                    "query": {
+                    "type": "string",
+                    "description": "Text to search for in page or database titles"
+                },
+                    "filter": {
+                    "type": "object",
+                    "description": "Filter results by object type (page or database)",
+                    "properties": {
+                    "property": {
+                    "type": "string",
+                    "description": "Must be 'object'"
+                },
+                    "value": {
+                    "type": "string",
+                    "description": "Either 'page' or 'database'"
+                }
+                }
+                },
+                    "sort": {
+                    "type": "object",
+                    "description": "Sort configuration for search results",
+                    "properties": {
+                    "direction": {
+                    "type": "string",
+                    "enum": ["ascending", "descending"]
+                },
+                    "timestamp": {
+                    "type": "string",
+                    "enum": ["last_edited_time"]
+                }
+                }
+                },
+                    "start_cursor": {
+                    "type": "string",
+                    "description": "Pagination cursor"
+                },
+                    "page_size": {
+                    "type": "integer",
+                    "description": "Number of results to return (max 100)"
+                }
+                },
                     "additionalProperties": false
                 }).as_object().unwrap().clone(),
             },
+            ToolDescription {
+                name: "notion_create_page".to_string(),
+                description: "Create a new page in Notion".to_string(),
+                input_schema: serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                        "parent": {
+                            "type": "object",
+                            "description": "Parent object specifying where to create the page"
+                        },
+                        "properties": {
+                            "type": "object",
+                            "description": "Page properties including title"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": block_schema,
+                            "description": "Optional array of block objects"
+                        },
+                        "icon": {
+                            "type": "object",
+                            "description": "Optional page icon"
+                        },
+                        "cover": {
+                            "type": "object",
+                            "description": "Optional page cover"
+                        }
+                    },
+                    "required": ["parent", "properties"],
+                    "additionalProperties": false
+                }).as_object().unwrap().clone(),
+            },
+
+            ToolDescription {
+                name: "notion_update_block".to_string(),
+                description: "Update a block's content in Notion".to_string(),
+                input_schema: serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                    "block_id": {
+                    "type": "string",
+                    "description": "The ID of the block to update. ".to_string() + COMMON_ID_DESCRIPTION
+                },
+                    "content": {
+                    "type": "object",
+                    "description": "The new content for the block"
+                }
+                },
+                    "required": ["block_id", "content"],
+                    "additionalProperties": false
+                }).as_object().unwrap().clone(),
+            },
+
+            ToolDescription {
+                name: "notion_list_block_children".to_string(),
+                description: "List all children blocks of a parent block".to_string(),
+                input_schema: serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                    "block_id": {
+                    "type": "string",
+                    "description": "The ID of the parent block. ".to_string() + COMMON_ID_DESCRIPTION
+                },
+                    "start_cursor": {
+                    "type": "string",
+                    "description": "Pagination cursor"
+                },
+                    "page_size": {
+                    "type": "integer",
+                    "description": "Number of blocks to return (max 100)"
+                }
+                },
+                    "required": ["block_id"],
+                    "additionalProperties": false
+                }).as_object().unwrap().clone(),
+            },
+
+            ToolDescription {
+                name: "notion_retrieve_database".to_string(),
+                description: "Retrieve a database's details from Notion".to_string(),
+                input_schema: serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                    "database_id": {
+                    "type": "string",
+                    "description": "The ID of the database to retrieve. ".to_string() + COMMON_ID_DESCRIPTION
+                }
+                },
+                    "required": ["database_id"],
+                    "additionalProperties": false
+                }).as_object().unwrap().clone(),
+            },
+
+            ToolDescription {
+                name: "notion_update_database".to_string(),
+                description: "Update a database's properties in Notion".to_string(),
+                input_schema: serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                    "database_id": {
+                    "type": "string",
+                    "description": "The ID of the database to update. ".to_string() + COMMON_ID_DESCRIPTION
+                },
+                    "title": {
+                    "type": "string",
+                    "description": "Optional new title for the database"
+                },
+                    "properties": {
+                    "type": "object",
+                    "description": "Optional new property configurations"
+                },
+                    "description": {
+                    "type": "string",
+                    "description": "Optional new description for the database"
+                }
+                },
+                    "required": ["database_id"],
+                    "additionalProperties": false
+                }).as_object().unwrap().clone(),
+            },
+
         ],
     })
 }
