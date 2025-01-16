@@ -34,8 +34,8 @@ var (
 				"freshness": prop("string", "Filters search results by when they were discovered. "+
 					"pd: Discovered within the last 24 hours. pw: Discovered within the last 7 Days. pm: Discovered within the last 31 Days. "+
 					"py: Discovered within the last 365 Days… YYYY-MM-DDtoYYYY-MM-DD: timeframe is also supported by specifying the date range e.g. 2022-04-01to2022-07-30."),
-				"text_decorations": prop("bool", "Whether display strings (e.g. result snippets) should include decoration markers (e.g. highlighting characters). Default: true"),
-				"spellcheck":       prop("bool", "Whether to spellcheck provided query. If the spellchecker is enabled, the modified query is always used for search. The modified query can be found in altered key from the query response model. Default: true"),
+				"text_decorations": prop("boolean", "Whether display strings (e.g. result snippets) should include decoration markers (e.g. highlighting characters). Default: true"),
+				"spellcheck":       prop("boolean", "Whether to spellcheck provided query. If the spellchecker is enabled, the modified query is always used for search. The modified query can be found in altered key from the query response model. Default: true"),
 				"result_filter": prop("string", "A comma delimited string of result types to include in the search response. "+
 					"Not specifying this parameter will return back all result types in search response where data is available and a plan with the corresponding option is subscribed. "+
 					"The response always includes query and type to identify any query modifications and response type respectively. "+
@@ -43,9 +43,9 @@ var (
 				"goggles_id": prop("string", "Goggles act as a custom re-ranking on top of Brave’s search index. For more details, refer to the Goggles repository."),
 				"units": prop("string", "The measurement units. If not provided, units are derived from search country. "+
 					"Possible values are: metric: The standardized measurement system, imperial: The British Imperial system of units."),
-				"extra_snippets": prop("bool", "A snippet is an excerpt from a page you get as a result of the query, and extra_snippets allow you to get up to 5 additional, alternative excerpts. "+
+				"extra_snippets": prop("boolean", "A snippet is an excerpt from a page you get as a result of the query, and extra_snippets allow you to get up to 5 additional, alternative excerpts. "+
 					"Only available under Free AI, Base AI, Pro AI, Base Data, Pro Data and Custom plans. Default: true"),
-				"summary": prop("bool", "This parameter enables summary key generation in web search results. This is required for summarizer to be enabled."),
+				"summary": prop("boolean", "This parameter enables summary key generation in web search results. This is required for summarizer to be enabled."),
 			},
 		},
 	}
@@ -67,7 +67,7 @@ var (
 				"safesearch": prop("string", "Filters search results for adult content. "+
 					"off: No filtering is done. moderate: Filters explicit content, like images and videos but allows adult domains in the search results. "+
 					"strict: Drops all adult content from search results. Default: moderate"),
-				"spellcheck": prop("bool", "Whether to spellcheck provided query. If the spellchecker is enabled, the modified query is always used for search. The modified query can be found in altered key from the query response model. Default: true"),
+				"spellcheck": prop("boolean", "Whether to spellcheck provided query. If the spellchecker is enabled, the modified query is always used for search. The modified query can be found in altered key from the query response model. Default: true"),
 			},
 		},
 	}
