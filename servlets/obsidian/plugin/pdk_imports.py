@@ -3,6 +3,7 @@
 from typing import Optional, List  # noqa: F401
 from datetime import datetime  # noqa: F401
 import extism  # noqa: F401 # pyright: ignore
+import json
 
 
 from pdk_types import (
