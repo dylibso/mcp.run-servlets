@@ -2,9 +2,10 @@
 
 from typing import Optional, List  # noqa: F401
 from datetime import datetime  # noqa: F401
+import json
 import extism  # pyright: ignore
 import plugin
-import json
+
 
 from pdk_types import (
     BlobResourceContents,
@@ -23,6 +24,7 @@ from pdk_types import (
 
 # Imports
 
+
 # Exports
 # The implementations for these functions is in `plugin.py`
 
@@ -31,9 +33,10 @@ from pdk_types import (
 # If you support multiple tools, you must switch on the input.params.name to detect which tool is being called.
 @extism.plugin_fn
 def call():
-    data = json.loads(extism.input_str())
-    res = plugin.call(data)
-    extism.output(res)
+    input = extism.input_str()
+    input = CallToolRequest.from_json(input)
+    res = plugin.call(input)
+    extism.output_str(res.to_json())
 
 
 # Called by mcpx to understand how and why to use this tool.
@@ -42,4 +45,4 @@ def call():
 @extism.plugin_fn
 def describe():
     res = plugin.describe()
-    extism.output(res)
+    extism.output_str(res.to_json())

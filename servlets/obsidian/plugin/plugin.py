@@ -93,60 +93,56 @@ def errorReturn(message):
                 isError=True,
             )
 
-
 # Called when the tool is invoked.
 # If you support multiple tools, you must switch on the input.params.name to detect which tool is being called.
-def call(input) -> CallToolResult:
-    try:
-        fname = input['params']['name']
-    except:
-        raise Exception("params name must be provided")
+def call(input: CallToolRequest) -> CallToolResult:
+    fname = input.params.name
     obsidian = Obsidian()
     match fname:
         case "list_files_in_vault":
             contentText = obsidian.list_files_in_vault()
         case "list_files_in_dir":
             try:
-                dirpath = input['params']['arguments']['dirpath']
-            except:
+                dirpath = input.params.arguments['dirpath']
+                contentText = obsidian.list_files_in_dir(dirpath)
+            except (KeyError, TypeError):
                 return errorReturn("Argument dirpath not provided")
-            contentText = obsidian.list_files_in_dir(dirpath)
         case "get_file_contents":
             try:
-                filepath = input['params']['arguments']['filepath']
-            except:
+                filepath = input.params.arguments['filepath']
+                contentText = obsidian.get_file_contents(filepath)
+            except (KeyError, TypeError):
                 return errorReturn("Argument filepath not provided")
-            contentText = obsidian.get_file_contents(filepath)
         case "simple_search":
             try:
-                query = input['params']['arguments']['query']
-            except:
+                query = input.params.arguments['query']
+                context_length = input.params.arguments.get('context_length')
+                contentText = obsidian.search(query, context_length)
+            except (KeyError, TypeError):
                 return errorReturn("Argument query not provided")
-            context_length = input['params']['arguments'].get('context_length')
-            contentText = obsidian.search(query, context_length)
         case "append_content":
             try:
-                filepath = input['params']['arguments']['filepath']
-                content = input['params']['arguments']['content']
-            except:
+                filepath = input.params.arguments['filepath']
+                content = input.params.arguments['content']
+                contentText = obsidian.append_content(filepath, content)
+            except (KeyError, TypeError):
                 return errorReturn("Argument filepath or content not provided")
-            contentText = obsidian.append_content(filepath, content)
         case "patch_content":
             try:
-                filepath = input['params']['arguments']['filepath']
-                operation = input['params']['arguments']['operation']
-                target_type = input['params']['arguments']['target_type']
-                target = input['params']['arguments']['target']
-                content = input['params']['arguments']['content']
-            except:
+                filepath = input.params.arguments['filepath']
+                operation = input.params.arguments['operation']
+                target_type = input.params.arguments['target_type']
+                target = input.params.arguments['target']
+                content = input.params.arguments['content']
+                contentText = obsidian.patch_content(filepath, operation, target_type, target, content)
+            except (KeyError, TypeError):
                 return errorReturn("Arguments missing")
-            contentText = obsidian.patch_content(filepath, operation, target_type, target, content)
         case "complex_search":
             try:
-                query = input['params']['arguments']['query']
-            except:
+                query = input.params.arguments['query']
+                contentText = obsidian.complex_search(query)
+            except (KeyError, TypeError):
                 return errorReturn("Argument query not provided")
-            contentText = obsidian.complex_search(query)
         case _:
             return errorReturn(f"Unknown tool {fname}")
     return CallToolResult(
@@ -159,7 +155,6 @@ def call(input) -> CallToolResult:
                 data=None,
             )
         ],
-        isError=False,
     )
 
 

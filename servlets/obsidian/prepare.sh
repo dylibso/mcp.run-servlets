@@ -40,5 +40,3 @@ if ! command_exists extism-py; then
   sleep 2
   exit 1
 fi
-
-
