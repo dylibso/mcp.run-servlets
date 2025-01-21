@@ -2,6 +2,8 @@ from typing import Optional, List  # noqa: F401
 from datetime import datetime  # noqa: F401
 import extism  # noqa: F401 # pyright: ignore
 from urllib.parse import urlencode
+import urllib.parse
+import json
 
 from pdk_types import (
     BlobResourceContents,
@@ -63,7 +65,7 @@ class Obsidian:
     def append_content(self, path, content):
         return self.post(f"/vault/{path}", content, {'Content-Type': 'text/markdown'})
     
-    def patch_content(filepath, operation, target_type, target, content):
+    def patch_content(self, path, operation, target_type, target, content):
         headers = {
             'Content-Type': 'text/markdown',
             'Operation': operation,
@@ -76,7 +78,6 @@ class Obsidian:
         headers = {
             'Content-Type': 'application/vnd.olrapi.jsonlogic+json',
         }
-        query_string = urlencode(params)
         return self.post(f"/search/", json.dumps(query), headers)
 
 def errorReturn(message):
