@@ -17,5 +17,5 @@ format = "npm run format"
 prepare = "bash prepare.sh"
 
 [[test]]
-name = "describe output"
-with = "../../simulations/describe-output/dist/plugin.wasm"
+name = "basic tests"
+with = "../../test/testsuite/dist/test.wasm"
