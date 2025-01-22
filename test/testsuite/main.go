@@ -56,6 +56,22 @@ func testToolCall(name string) {
 		testCoulombForce()
 	case "induced_emf":
 		testInducedEMF()
+	case "magnetic_field":
+		testMagneticField()
+	case "lorentz_force":
+		testLorentzForce()
+	case "cyclotron_frequency":
+		testCyclotronFrequency()
+	case "electric_potential_energy":
+		testElectricPotentialEnergy()
+	case "magnetic_flux":
+		testMagneticFlux()
+	case "capacitor_energy":
+		testCapacitorEnergy()
+	case "solenoid_inductance":
+		testSolenoidInductance()
+	case "rc_time_constant":
+		testRCTimeConstant()
 	case "validate":
 	default:
 		xtptest.Assert(fmt.Sprintf("Unable to test '%s'", name), false, "Unknown tool")
@@ -583,6 +599,441 @@ func testInducedEMF() {
 		xtptest.Assert("EMF should match expected value",
 			math.Abs(response.EMF-expectedEMF) < 0.001,
 			fmt.Sprintf("Got EMF: %f, expected: %f", response.EMF, expectedEMF))
+	})
+}
+func testMagneticField() {
+	xtptest.Group("test magnetic_field tool", func() {
+		pdk.Log(pdk.LogDebug, "Testing magnetic field calculation")
+
+		arguments := map[string]interface{}{
+			"current": 1.0, // 1 Ampere
+			"wirePath": map[string]interface{}{
+				"x": 0.0,
+				"y": 0.0,
+				"z": 1.0,
+			},
+			"observationPoint": map[string]interface{}{
+				"x": 1.0,
+				"y": 0.0,
+				"z": 0.0,
+			},
+		}
+
+		input := CallToolRequest{
+			Method: nil,
+			Params: Params{
+				Arguments: &arguments,
+				Name:      "magnetic_field",
+			},
+		}
+
+		inputBytes, err := input.Marshal()
+		if err != nil {
+			xtptest.Assert("Failed to marshal input", false, err.Error())
+		}
+
+		output := xtptest.CallBytes("call", inputBytes)
+		result, err := parseCallToolResult(output)
+		if err != nil {
+			xtptest.Assert("Failed to parse tool call result", false, err.Error())
+		}
+
+		hasErrored := result.IsError != nil && *result.IsError
+		xtptest.AssertEq("Tool call should not have errored", hasErrored, false)
+		xtptest.AssertEq("Tool call should have one content item", len(result.Content), 1)
+		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeText)
+
+		var response struct {
+			Field struct {
+				X float64 `json:"x"`
+				Y float64 `json:"y"`
+				Z float64 `json:"z"`
+			} `json:"field"`
+			Magnitude float64 `json:"magnitude"`
+			Unit      string  `json:"unit"`
+		}
+		err = json.Unmarshal([]byte(*result.Content[0].Text), &response)
+		if err != nil {
+			xtptest.Assert("Failed to parse response JSON", false, err.Error())
+		}
+
+		xtptest.AssertEq("Unit should be Tesla", response.Unit, "Tesla")
+		xtptest.Assert("Field magnitude should be non-zero", response.Magnitude > 0,
+			fmt.Sprintf("Got magnitude: %f", response.Magnitude))
+	})
+}
+
+func testLorentzForce() {
+	xtptest.Group("test lorentz_force tool", func() {
+		pdk.Log(pdk.LogDebug, "Testing Lorentz force calculation")
+
+		arguments := map[string]interface{}{
+			"charge": 1.6e-19, // electron charge
+			"velocity": map[string]interface{}{
+				"x": 1000.0,
+				"y": 0.0,
+				"z": 0.0,
+			},
+			"electricField": map[string]interface{}{
+				"x": 100.0,
+				"y": 0.0,
+				"z": 0.0,
+			},
+			"magneticField": map[string]interface{}{
+				"x": 0.0,
+				"y": 0.0,
+				"z": 1.0,
+			},
+		}
+
+		input := CallToolRequest{
+			Method: nil,
+			Params: Params{
+				Arguments: &arguments,
+				Name:      "lorentz_force",
+			},
+		}
+
+		inputBytes, err := input.Marshal()
+		if err != nil {
+			xtptest.Assert("Failed to marshal input", false, err.Error())
+		}
+
+		output := xtptest.CallBytes("call", inputBytes)
+		result, err := parseCallToolResult(output)
+		if err != nil {
+			xtptest.Assert("Failed to parse tool call result", false, err.Error())
+		}
+
+		hasErrored := result.IsError != nil && *result.IsError
+		xtptest.AssertEq("Tool call should not have errored", hasErrored, false)
+		xtptest.AssertEq("Tool call should have one content item", len(result.Content), 1)
+		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeText)
+
+		var response struct {
+			Force struct {
+				X float64 `json:"x"`
+				Y float64 `json:"y"`
+				Z float64 `json:"z"`
+			} `json:"force"`
+			Magnitude float64 `json:"magnitude"`
+			Unit      string  `json:"unit"`
+		}
+		err = json.Unmarshal([]byte(*result.Content[0].Text), &response)
+		if err != nil {
+			xtptest.Assert("Failed to parse response JSON", false, err.Error())
+		}
+
+		xtptest.AssertEq("Unit should be Newtons", response.Unit, "Newtons")
+		xtptest.Assert("Force magnitude should be non-zero", response.Magnitude > 0,
+			fmt.Sprintf("Got magnitude: %f", response.Magnitude))
+	})
+}
+
+func testCyclotronFrequency() {
+	xtptest.Group("test cyclotron_frequency tool", func() {
+		pdk.Log(pdk.LogDebug, "Testing cyclotron frequency calculation")
+
+		arguments := map[string]interface{}{
+			"charge":        1.6e-19, // electron charge
+			"magneticField": 1.0,     // 1 Tesla
+			"mass":          9.1e-31, // electron mass
+		}
+
+		input := CallToolRequest{
+			Method: nil,
+			Params: Params{
+				Arguments: &arguments,
+				Name:      "cyclotron_frequency",
+			},
+		}
+
+		inputBytes, err := input.Marshal()
+		if err != nil {
+			xtptest.Assert("Failed to marshal input", false, err.Error())
+		}
+
+		output := xtptest.CallBytes("call", inputBytes)
+		result, err := parseCallToolResult(output)
+		if err != nil {
+			xtptest.Assert("Failed to parse tool call result", false, err.Error())
+		}
+
+		hasErrored := result.IsError != nil && *result.IsError
+		xtptest.AssertEq("Tool call should not have errored", hasErrored, false)
+		xtptest.AssertEq("Tool call should have one content item", len(result.Content), 1)
+		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeText)
+
+		var response struct {
+			Frequency float64 `json:"frequency"`
+			Unit      string  `json:"unit"`
+		}
+		err = json.Unmarshal([]byte(*result.Content[0].Text), &response)
+		if err != nil {
+			xtptest.Assert("Failed to parse response JSON", false, err.Error())
+		}
+
+		xtptest.AssertEq("Unit should be Hertz", response.Unit, "Hertz")
+		xtptest.Assert("Frequency should be positive", response.Frequency > 0,
+			fmt.Sprintf("Got frequency: %f", response.Frequency))
+	})
+}
+
+func testElectricPotentialEnergy() {
+	xtptest.Group("test electric_potential_energy tool", func() {
+		pdk.Log(pdk.LogDebug, "Testing electric potential energy calculation")
+
+		arguments := map[string]interface{}{
+			"charge1":  1e-6,  // 1 microcoulomb
+			"charge2":  -1e-6, // -1 microcoulomb
+			"distance": 1.0,   // 1 meter
+		}
+
+		input := CallToolRequest{
+			Method: nil,
+			Params: Params{
+				Arguments: &arguments,
+				Name:      "electric_potential_energy",
+			},
+		}
+
+		inputBytes, err := input.Marshal()
+		if err != nil {
+			xtptest.Assert("Failed to marshal input", false, err.Error())
+		}
+
+		output := xtptest.CallBytes("call", inputBytes)
+		result, err := parseCallToolResult(output)
+		if err != nil {
+			xtptest.Assert("Failed to parse tool call result", false, err.Error())
+		}
+
+		hasErrored := result.IsError != nil && *result.IsError
+		xtptest.AssertEq("Tool call should not have errored", hasErrored, false)
+		xtptest.AssertEq("Tool call should have one content item", len(result.Content), 1)
+		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeText)
+
+		var response struct {
+			Energy float64 `json:"energy"`
+			Unit   string  `json:"unit"`
+		}
+		err = json.Unmarshal([]byte(*result.Content[0].Text), &response)
+		if err != nil {
+			xtptest.Assert("Failed to parse response JSON", false, err.Error())
+		}
+
+		xtptest.AssertEq("Unit should be Joules", response.Unit, "Joules")
+		xtptest.Assert("Energy should be negative for opposite charges",
+			response.Energy < 0, fmt.Sprintf("Got energy: %f", response.Energy))
+	})
+}
+
+func testMagneticFlux() {
+	xtptest.Group("test magnetic_flux tool", func() {
+		pdk.Log(pdk.LogDebug, "Testing magnetic flux calculation")
+
+		arguments := map[string]interface{}{
+			"magneticField": map[string]interface{}{
+				"x": 0.0,
+				"y": 0.0,
+				"z": 1.0, // 1 Tesla
+			},
+			"area":  1.0, // 1 square meter
+			"angle": 0.0, // 0 radians (parallel)
+		}
+
+		input := CallToolRequest{
+			Method: nil,
+			Params: Params{
+				Arguments: &arguments,
+				Name:      "magnetic_flux",
+			},
+		}
+
+		inputBytes, err := input.Marshal()
+		if err != nil {
+			xtptest.Assert("Failed to marshal input", false, err.Error())
+		}
+
+		output := xtptest.CallBytes("call", inputBytes)
+		result, err := parseCallToolResult(output)
+		if err != nil {
+			xtptest.Assert("Failed to parse tool call result", false, err.Error())
+		}
+
+		hasErrored := result.IsError != nil && *result.IsError
+		xtptest.AssertEq("Tool call should not have errored", hasErrored, false)
+		xtptest.AssertEq("Tool call should have one content item", len(result.Content), 1)
+		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeText)
+
+		var response struct {
+			Flux float64 `json:"flux"`
+			Unit string  `json:"unit"`
+		}
+		err = json.Unmarshal([]byte(*result.Content[0].Text), &response)
+		if err != nil {
+			xtptest.Assert("Failed to parse response JSON", false, err.Error())
+		}
+
+		xtptest.AssertEq("Unit should be Weber", response.Unit, "Weber")
+		expectedFlux := 1.0 // B * A * cos(0) = 1 * 1 * 1 = 1
+		xtptest.Assert("Flux should match expected value",
+			math.Abs(response.Flux-expectedFlux) < 0.001,
+			fmt.Sprintf("Got flux: %f, expected: %f", response.Flux, expectedFlux))
+	})
+}
+
+func testCapacitorEnergy() {
+	xtptest.Group("test capacitor_energy tool", func() {
+		pdk.Log(pdk.LogDebug, "Testing capacitor energy calculation")
+
+		arguments := map[string]interface{}{
+			"capacitance": 1e-6, // 1 microfarad
+			"voltage":     12.0, // 12 volts
+		}
+
+		input := CallToolRequest{
+			Method: nil,
+			Params: Params{
+				Arguments: &arguments,
+				Name:      "capacitor_energy",
+			},
+		}
+
+		inputBytes, err := input.Marshal()
+		if err != nil {
+			xtptest.Assert("Failed to marshal input", false, err.Error())
+		}
+
+		output := xtptest.CallBytes("call", inputBytes)
+		result, err := parseCallToolResult(output)
+		if err != nil {
+			xtptest.Assert("Failed to parse tool call result", false, err.Error())
+		}
+
+		hasErrored := result.IsError != nil && *result.IsError
+		xtptest.AssertEq("Tool call should not have errored", hasErrored, false)
+		xtptest.AssertEq("Tool call should have one content item", len(result.Content), 1)
+		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeText)
+
+		var response struct {
+			Energy float64 `json:"energy"`
+			Unit   string  `json:"unit"`
+		}
+		err = json.Unmarshal([]byte(*result.Content[0].Text), &response)
+		if err != nil {
+			xtptest.Assert("Failed to parse response JSON", false, err.Error())
+		}
+
+		xtptest.AssertEq("Unit should be Joules", response.Unit, "Joules")
+		expectedEnergy := 0.5 * 1e-6 * 12.0 * 12.0
+		xtptest.Assert("Energy should match expected value",
+			math.Abs(response.Energy-expectedEnergy) < 0.001,
+			fmt.Sprintf("Got energy: %f, expected: %f", response.Energy, expectedEnergy))
+	})
+}
+
+func testSolenoidInductance() {
+	xtptest.Group("test solenoid_inductance tool", func() {
+		pdk.Log(pdk.LogDebug, "Testing solenoid inductance calculation")
+
+		arguments := map[string]interface{}{
+			"turns":  1000,   // 1000 turns
+			"length": 0.1,    // 10 cm
+			"area":   0.0001, // 1 cm²
+		}
+
+		input := CallToolRequest{
+			Method: nil,
+			Params: Params{
+				Arguments: &arguments,
+				Name:      "solenoid_inductance",
+			},
+		}
+
+		inputBytes, err := input.Marshal()
+		if err != nil {
+			xtptest.Assert("Failed to marshal input", false, err.Error())
+		}
+
+		output := xtptest.CallBytes("call", inputBytes)
+		result, err := parseCallToolResult(output)
+		if err != nil {
+			xtptest.Assert("Failed to parse tool call result", false, err.Error())
+		}
+
+		hasErrored := result.IsError != nil && *result.IsError
+		xtptest.AssertEq("Tool call should not have errored", hasErrored, false)
+		xtptest.AssertEq("Tool call should have one content item", len(result.Content), 1)
+		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeText)
+		var response struct {
+			Inductance float64 `json:"inductance"`
+			Unit       string  `json:"unit"`
+		}
+
+		err = json.Unmarshal([]byte(*result.Content[0].Text), &response)
+		if err != nil {
+			xtptest.Assert("Failed to parse response JSON", false, err.Error())
+		}
+
+		xtptest.AssertEq("Unit should be Henry", response.Unit, "Henry")
+
+		expectedInductance := (4 * math.Pi * 1e-7 * 1000 * 1000 * 0.0001) / 0.1 // μ₀N²A/l
+		xtptest.Assert("Inductance should match expected value",
+			math.Abs(response.Inductance-expectedInductance) < 0.001,
+			fmt.Sprintf("Got inductance: %f, expected: %f", response.Inductance, expectedInductance))
+	})
+}
+
+func testRCTimeConstant() {
+	xtptest.Group("test rc_time_constant tool", func() {
+		pdk.Log(pdk.LogDebug, "Testing RC time constant calculation")
+
+		arguments := map[string]interface{}{
+			"resistance":  1000.0, // 1 kΩ
+			"capacitance": 1e-6,   // 1 μF
+		}
+
+		input := CallToolRequest{
+			Method: nil,
+			Params: Params{
+				Arguments: &arguments,
+				Name:      "rc_time_constant",
+			},
+		}
+
+		inputBytes, err := input.Marshal()
+		if err != nil {
+			xtptest.Assert("Failed to marshal input", false, err.Error())
+		}
+
+		output := xtptest.CallBytes("call", inputBytes)
+		result, err := parseCallToolResult(output)
+		if err != nil {
+			xtptest.Assert("Failed to parse tool call result", false, err.Error())
+		}
+
+		hasErrored := result.IsError != nil && *result.IsError
+		xtptest.AssertEq("Tool call should not have errored", hasErrored, false)
+		xtptest.AssertEq("Tool call should have one content item", len(result.Content), 1)
+		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeText)
+
+		var response struct {
+			TimeConstant float64 `json:"timeConstant"`
+			Unit         string  `json:"unit"`
+		}
+
+		err = json.Unmarshal([]byte(*result.Content[0].Text), &response)
+		if err != nil {
+			xtptest.Assert("Failed to parse response JSON", false, err.Error())
+		}
+
+		xtptest.AssertEq("Unit should be Seconds", response.Unit, "Seconds")
+
+		expectedTimeConstant := 0.001 // RC = 1000 * 1e-6 = 0.001
+		xtptest.Assert("Time constant should match expected value",
+			math.Abs(response.TimeConstant-expectedTimeConstant) < 0.001,
+			fmt.Sprintf("Got time constant: %f, expected: %f", response.TimeConstant, expectedTimeConstant))
 	})
 }
 
