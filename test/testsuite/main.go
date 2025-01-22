@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"math"
 	"regexp"
 	"strings"
 
@@ -50,6 +52,10 @@ func testToolCall(name string) {
 		testFetchImage()
 	case "gif-search":
 		testTenor()
+	case "coulomb_force":
+		testCoulombForce()
+	case "induced_emf":
+		testInducedEMF()
 	case "validate":
 	default:
 		xtptest.Assert(fmt.Sprintf("Unable to test '%s'", name), false, "Unknown tool")
@@ -459,6 +465,124 @@ func testCurrencyConverter() {
 		pdk.Log(pdk.LogDebug, fmt.Sprintf("Converted amount: %f", convertedAmount))
 
 		xtptest.Assert("Converted amount should be greater than 0", convertedAmount > 0, fmt.Sprintf("Converted amount: %f", convertedAmount))
+	})
+}
+
+func testCoulombForce() {
+	xtptest.Group("test coulomb_force tool", func() {
+		pdk.Log(pdk.LogDebug, "Testing Coulomb force calculation")
+
+		arguments := map[string]interface{}{
+			"charge1": 1e-6, // 1 microcoulomb
+			"position1": map[string]interface{}{
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0,
+			},
+			"charge2": -1e-6, // -1 microcoulomb
+			"position2": map[string]interface{}{
+				"x": 1.0,
+				"y": 0.0,
+				"z": 0.0,
+			},
+		}
+
+		input := CallToolRequest{
+			Method: nil,
+			Params: Params{
+				Arguments: &arguments,
+				Name:      "coulomb_force",
+			},
+		}
+
+		inputBytes, err := input.Marshal()
+		if err != nil {
+			xtptest.Assert("Failed to marshal input", false, err.Error())
+		}
+
+		output := xtptest.CallBytes("call", inputBytes)
+		result, err := parseCallToolResult(output)
+		if err != nil {
+			xtptest.Assert("Failed to parse tool call result", false, err.Error())
+		}
+
+		hasErrored := result.IsError != nil && *result.IsError
+		xtptest.AssertEq("Tool call should not have errored", hasErrored, false)
+		xtptest.AssertEq("Tool call should have one content item", len(result.Content), 1)
+		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeText)
+
+		// Parse the JSON response
+		var response struct {
+			Force struct {
+				X float64 `json:"x"`
+				Y float64 `json:"y"`
+				Z float64 `json:"z"`
+			} `json:"force"`
+			Magnitude float64 `json:"magnitude"`
+			Unit      string  `json:"unit"`
+		}
+		err = json.Unmarshal([]byte(*result.Content[0].Text), &response)
+		if err != nil {
+			xtptest.Assert("Failed to parse response JSON", false, err.Error())
+		}
+
+		xtptest.AssertEq("Unit should be Newtons", response.Unit, "Newtons")
+		xtptest.Assert("Force magnitude should be non-zero", response.Magnitude > 0,
+			fmt.Sprintf("Got magnitude: %f", response.Magnitude))
+		xtptest.Assert("Force should be attractive (negative x component)",
+			response.Force.X < 0, fmt.Sprintf("Got x component: %f", response.Force.X))
+	})
+}
+
+func testInducedEMF() {
+	xtptest.Group("test induced_emf tool", func() {
+		pdk.Log(pdk.LogDebug, "Testing induced EMF calculation")
+
+		arguments := map[string]interface{}{
+			"fluxChange":   0.5, // 0.5 Weber
+			"timeInterval": 0.1, // 0.1 seconds
+			"turns":        100, // 100 turns
+		}
+
+		input := CallToolRequest{
+			Method: nil,
+			Params: Params{
+				Arguments: &arguments,
+				Name:      "induced_emf",
+			},
+		}
+
+		inputBytes, err := input.Marshal()
+		if err != nil {
+			xtptest.Assert("Failed to marshal input", false, err.Error())
+		}
+
+		output := xtptest.CallBytes("call", inputBytes)
+		result, err := parseCallToolResult(output)
+		if err != nil {
+			xtptest.Assert("Failed to parse tool call result", false, err.Error())
+		}
+
+		hasErrored := result.IsError != nil && *result.IsError
+		xtptest.AssertEq("Tool call should not have errored", hasErrored, false)
+		xtptest.AssertEq("Tool call should have one content item", len(result.Content), 1)
+		xtptest.AssertEq("Content type should be text", result.Content[0].Type, ContentTypeText)
+
+		// Parse the JSON response
+		var response struct {
+			EMF  float64 `json:"emf"`
+			Unit string  `json:"unit"`
+		}
+		err = json.Unmarshal([]byte(*result.Content[0].Text), &response)
+		if err != nil {
+			xtptest.Assert("Failed to parse response JSON", false, err.Error())
+		}
+
+		xtptest.AssertEq("Unit should be Volts", response.Unit, "Volts")
+		expectedEMF := -500.0 // -N * ΔΦ/Δt = -(100 * 0.5/0.1) = -500
+		xtptest.Assert("EMF should match expected value",
+			math.Abs(response.EMF-expectedEMF) < 0.001,
+			fmt.Sprintf("Got EMF: %f, expected: %f", response.EMF, expectedEMF))
 	})
 }
 
