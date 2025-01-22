@@ -10,3 +10,9 @@ Using Cursor, Cline, or other AI-enabled IDEs have their own ways of integrating
 If you are using a Chat interface, you can copy/paste context generated from here: 
 https://gitingest.com/dylibso/mcp.run-servlets
 
+**Note:** to reduce context used, add these patterns to the "Exclude" dropdown so they are not tokenized:
+
+```
+**/package*.json, **/go.mod, **/go.sum, **/go.work*, **/LICENSE, LICENSE, .gitignore, **/.gitignore
+```
+
