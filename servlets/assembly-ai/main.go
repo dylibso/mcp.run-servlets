@@ -90,9 +90,23 @@ func Describe() (ListToolsResult, error) {
 		Tools: []ToolDescription{
 			{
 				Name:        "transcribe",
-				Description: "Transcribes an audio file using AssemblyAI and returns the transcription as text. Supports common audio formats (mp3, wav, FLAC, AAC, M4A, etc). Audio can be provided either as a file path or base64-encoded string. on windows, if the user gave you a path like C:\\Users\\{user}\\file.mp3, you should convert it to /home/file.mp3. and convert paths that start with c:/ or other drives to start with `/` Either audio_path or audio_base64 must be provided.",
+				Description: "Transcribes an audio file using AssemblyAI and returns the transcription as text. Supports common audio formats (mp3, wav, FLAC, AAC, M4A, etc)",
 				InputSchema: map[string]interface{}{
 					"type": "object",
+					"oneOf": []interface{}{
+						map[string]interface{}{
+							"required": []string{"audio_path"},
+							"not": map[string]interface{}{
+								"required": []string{"audio_base64"},
+							},
+						},
+						map[string]interface{}{
+							"required": []string{"audio_base64"},
+							"not": map[string]interface{}{
+								"required": []string{"audio_path"},
+							},
+						},
+					},
 					"properties": map[string]interface{}{
 						"audio_path": map[string]interface{}{
 							"type":        "string",

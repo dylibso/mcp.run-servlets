@@ -15,3 +15,7 @@ name = "wolfram-alpha"
 
   # xtp plugin init runs this script before running the format script
   prepare = "bash prepare.sh"
+
+[[test]]
+name = "describe output"
+with = "../../simulations/describe-output/dist/plugin.wasm"

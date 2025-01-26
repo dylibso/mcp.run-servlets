@@ -21,6 +21,9 @@ build:
     cd ../..
   done
 
+  cd simulations/describe-output
+  make build
+
 push:
   #!/usr/bin/env bash
   set -eou pipefail
