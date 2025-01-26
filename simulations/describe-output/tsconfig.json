@@ -6,7 +6,7 @@
       "es2020"
     ], // Specify a list of library files to be included in the compilation
     "types": [
-      // "@extism/js-pdk",
+      "@extism/js-pdk",
       "./src/index.d.ts"
     ], // Specify a list of type definition files to be included in the compilation
     "strict": true, // Enable all strict type-checking options
