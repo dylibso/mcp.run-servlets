@@ -97,7 +97,6 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 		}
 	}
 }
-
 func Describe() (ListToolsResult, error) {
 	return ListToolsResult{
 		Tools: []ToolDescription{
@@ -128,22 +127,14 @@ func Describe() (ListToolsResult, error) {
 				Description: "List events from a calendar with optional time range",
 				InputSchema: map[string]interface{}{
 					"type": "object",
-					"anyOf": []map[string]interface{}{
-						{
-							"required": []string{"access_token"},
-						},
-						{
-							"required": []string{"device_code"},
-						},
-					},
 					"properties": map[string]interface{}{
 						"access_token": map[string]interface{}{
 							"type":        "string",
-							"description": "Access token from login-complete",
+							"description": "Access token from login-complete. Either access_token or device_code must be provided",
 						},
 						"device_code": map[string]interface{}{
 							"type":        "string",
-							"description": "Device code if access token is not yet available",
+							"description": "Device code if access token is not yet available. Either access_token or device_code must be provided",
 						},
 						"calendar_id": map[string]interface{}{
 							"type":        "string",
@@ -176,22 +167,14 @@ func Describe() (ListToolsResult, error) {
 						"start_time",
 						"end_time",
 					},
-					"anyOf": []map[string]interface{}{
-						{
-							"required": []string{"access_token"},
-						},
-						{
-							"required": []string{"device_code"},
-						},
-					},
 					"properties": map[string]interface{}{
 						"access_token": map[string]interface{}{
 							"type":        "string",
-							"description": "Access token from login-complete",
+							"description": "Access token from login-complete. Either access_token or device_code must be provided",
 						},
 						"device_code": map[string]interface{}{
 							"type":        "string",
-							"description": "Device code if access token is not yet available",
+							"description": "Device code if access token is not yet available. Either access_token or device_code must be provided",
 						},
 						"calendar_id": map[string]interface{}{
 							"type":        "string",
@@ -236,22 +219,14 @@ func Describe() (ListToolsResult, error) {
 					"required": []string{
 						"event_id",
 					},
-					"anyOf": []map[string]interface{}{
-						{
-							"required": []string{"access_token"},
-						},
-						{
-							"required": []string{"device_code"},
-						},
-					},
 					"properties": map[string]interface{}{
 						"access_token": map[string]interface{}{
 							"type":        "string",
-							"description": "Access token from login-complete",
+							"description": "Access token from login-complete. Either access_token or device_code must be provided",
 						},
 						"device_code": map[string]interface{}{
 							"type":        "string",
-							"description": "Device code if access token is not yet available",
+							"description": "Device code if access token is not yet available. Either access_token or device_code must be provided",
 						},
 						"calendar_id": map[string]interface{}{
 							"type":        "string",
@@ -297,22 +272,14 @@ func Describe() (ListToolsResult, error) {
 				Description: "List all calendars in the user's calendar list",
 				InputSchema: map[string]interface{}{
 					"type": "object",
-					"anyOf": []map[string]interface{}{
-						{
-							"required": []string{"access_token"},
-						},
-						{
-							"required": []string{"device_code"},
-						},
-					},
 					"properties": map[string]interface{}{
 						"access_token": map[string]interface{}{
 							"type":        "string",
-							"description": "Access token from login-complete",
+							"description": "Access token from login-complete. Either access_token or device_code must be provided",
 						},
 						"device_code": map[string]interface{}{
 							"type":        "string",
-							"description": "Device code if access token is not yet available",
+							"description": "Device code if access token is not yet available. Either access_token or device_code must be provided",
 						},
 						"max_results": map[string]interface{}{
 							"type":        "number",
