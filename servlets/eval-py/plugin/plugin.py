@@ -102,23 +102,24 @@ def call(input: CallToolRequest) -> CallToolResult:
     if len(result[1]):
         try:
             mimeType = guess_mime_type(result[1])
-            content.append([
+            content.append(
                 Content(
                     type=ContentType.Image,
                     mimeType=mimeType,
-                    data=b64encode(result[1])
+                    data=b64encode(result[1]).decode('ascii')
                 )
-            ])
+            )
         except:
-            content.append([
+            content.append(
                 Content(
                     type=ContentType.Text,
-                    text='Unknown image format',
-                    isError=True
+                    text=f'Unknown image format: {result[1]}',
                 )
-            ])
+            )
+            isError=True
     return CallToolResult(
-        content=content
+        content=content,
+        isError=isError
     )
 
 # Called by mcpx to understand how and why to use this tool.
@@ -135,7 +136,7 @@ def describe() -> ListToolsResult:
                     "properties": {
                         "code": {
                             "type": "string",
-                            "description": "The Python code to eval. This code gets passed into `exec()` and the stdout output is returned.",
+                            "description": "The Python code to eval. This code gets passed into `exec()` and the stdout output is returned. Unless it's an image file, only text can be outputted, not binary.",
                         },
                     },
                     "required": ["code"],
