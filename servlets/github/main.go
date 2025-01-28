@@ -97,6 +97,25 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 		files := filePushFromArgs(args)
 		return filesPush(apiKey, owner, repo, branch, message, files), nil
 
+	case ListReposTool.Name:
+		owner, _ := args["owner"].(string)
+		return reposList(apiKey, owner, args)
+
+	case GetRepositoryCollaboratorsTool.Name:
+		owner, _ := args["owner"].(string)
+		repo, _ := args["repo"].(string)
+		return reposGetCollaborators(apiKey, owner, repo, args)
+
+	case GetRepositoryContributorsTool.Name:
+		owner, _ := args["owner"].(string)
+		repo, _ := args["repo"].(string)
+		return reposGetContributors(apiKey, owner, repo, args)
+
+	case GetRepositoryDetailsTool.Name:
+		owner, _ := args["owner"].(string)
+		repo, _ := args["repo"].(string)
+		return reposGetDetails(apiKey, owner, repo)
+
 	default:
 		return CallToolResult{
 			IsError: some(true),
@@ -110,8 +129,21 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 }
 
 func Describe() (ListToolsResult, error) {
+	toolsets := [][]ToolDescription{
+		IssueTools,
+		FileTools,
+		BranchTools,
+		RepoTools,
+	}
+
+	tools := []ToolDescription{}
+
+	for _, toolset := range toolsets {
+		tools = append(tools, toolset...)
+	}
+
 	return ListToolsResult{
-		Tools: append(IssueTools, append(FileTools, BranchTools...)...),
+		Tools: tools,
 	}, nil
 }
 
