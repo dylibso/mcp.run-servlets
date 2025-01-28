@@ -27,6 +27,10 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 	args := input.Params.Arguments.(map[string]interface{})
 	pdk.Log(pdk.LogDebug, fmt.Sprint("Args: ", args))
 	switch input.Params.Name {
+	case ListIssuesTool.Name:
+		owner, _ := args["owner"].(string)
+		repo, _ := args["repo"].(string)
+		return issueList(apiKey, owner, repo, args)
 	case GetIssueTool.Name:
 		owner, _ := args["owner"].(string)
 		repo, _ := args["repo"].(string)
@@ -73,6 +77,11 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 			maybeBranch = &branch
 		}
 		return branchCreate(apiKey, owner, repo, from, maybeBranch), nil
+
+	case ListPullRequestsTool.Name:
+		owner, _ := args["owner"].(string)
+		repo, _ := args["repo"].(string)
+		return pullRequestList(apiKey, owner, repo, args)
 
 	case CreatePullRequestTool.Name:
 		owner, _ := args["owner"].(string)
