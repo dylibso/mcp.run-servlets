@@ -14,10 +14,6 @@ build:
   #!/usr/bin/env bash
   set -eou pipefail
 
-  cd simulations/describe-output
-  make build
-  cd ../..
-
   for dir in servlets/*/; do
     cd "$dir"
     echo "Building $dir"
@@ -25,6 +21,9 @@ build:
     xtp plugin build
     cd ../..
   done
+
+  cd simulations/describe-output
+  make build
 
 push:
   #!/usr/bin/env bash
