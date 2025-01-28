@@ -5,7 +5,7 @@ from enum import Enum  # noqa: F401
 from typing import Optional, List  # noqa: F401
 from datetime import datetime  # noqa: F401
 from dataclasses import dataclass  # noqa: F401
-from dataclass_wizard import JSONWizard  # noqa: F401
+from dataclass_wizard import JSONWizard, skip_if_field, IS  # noqa: F401
 from dataclass_wizard.type_def import JSONObject
 from base64 import b64encode, b64decode
 
@@ -19,7 +19,7 @@ class BlobResourceContents(JSONWizard):
     uri: str
 
     # The MIME type of this resource, if known.
-    mimeType: Optional[str] = None
+    mimeType: Optional[str] = skip_if_field(IS(None), default=None)
 
     @classmethod
     def _pre_from_dict(cls, o: JSONObject) -> JSONObject:
@@ -33,7 +33,7 @@ class BlobResourceContents(JSONWizard):
 class CallToolRequest(JSONWizard):
     params: Params
 
-    method: Optional[str] = None
+    method: Optional[str] = skip_if_field(IS(None), default=None)
 
     @classmethod
     def _pre_from_dict(cls, o: JSONObject) -> JSONObject:
@@ -50,7 +50,7 @@ class CallToolResult(JSONWizard):
     # Whether the tool call ended in an error.
     #
     # If not set, this is assumed to be false (the call was successful).
-    isError: Optional[bool] = None
+    isError: Optional[bool] = skip_if_field(IS(None), default=None)
 
     @classmethod
     def _pre_from_dict(cls, o: JSONObject) -> JSONObject:
@@ -64,16 +64,16 @@ class CallToolResult(JSONWizard):
 class Content(JSONWizard):
     type: ContentType
 
-    annotations: Optional[TextAnnotation] = None
+    annotations: Optional[TextAnnotation] = skip_if_field(IS(None), default=None)
 
     # The base64-encoded image data.
-    data: Optional[str] = None
+    data: Optional[str] = skip_if_field(IS(None), default=None)
 
     # The MIME type of the image. Different providers may support different image types.
-    mimeType: Optional[str] = None
+    mimeType: Optional[str] = skip_if_field(IS(None), default=None)
 
     # The text content of the message.
-    text: Optional[str] = None
+    text: Optional[str] = skip_if_field(IS(None), default=None)
 
     @classmethod
     def _pre_from_dict(cls, o: JSONObject) -> JSONObject:
@@ -106,7 +106,7 @@ class ListToolsResult(JSONWizard):
 class Params(JSONWizard):
     name: str
 
-    arguments: Optional[dict] = None
+    arguments: Optional[dict] = skip_if_field(IS(None), default=None)
 
     @classmethod
     def _pre_from_dict(cls, o: JSONObject) -> JSONObject:
@@ -126,14 +126,14 @@ class TextAnnotation(JSONWizard):
     # Describes who the intended customer of this object or data is.
     #
     # It can include multiple entries to indicate content useful for multiple audiences (e.g., `["user", "assistant"]`).
-    audience: Optional[List[Role]] = None
+    audience: Optional[List[Role]] = skip_if_field(IS(None), default=None)
 
     # Describes how important this data is for operating the server.
     #
     # A value of 1 means "most important," and indicates that the data is
     # effectively required, while 0 means "least important," and indicates that
     # the data is entirely optional.
-    priority: Optional[float] = None
+    priority: Optional[float] = skip_if_field(IS(None), default=None)
 
     @classmethod
     def _pre_from_dict(cls, o: JSONObject) -> JSONObject:
@@ -152,7 +152,7 @@ class TextResourceContents(JSONWizard):
     uri: str
 
     # The MIME type of this resource, if known.
-    mimeType: Optional[str] = None
+    mimeType: Optional[str] = skip_if_field(IS(None), default=None)
 
     @classmethod
     def _pre_from_dict(cls, o: JSONObject) -> JSONObject:
