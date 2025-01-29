@@ -6,6 +6,7 @@ use (
 	./servlets/brave-search
 	./servlets/crypto-hash
 	./servlets/github
+	./servlets/google-calendar
 	./servlets/google-maps-image
 	./servlets/historical-flight-api
 	./servlets/tenor-gifs
