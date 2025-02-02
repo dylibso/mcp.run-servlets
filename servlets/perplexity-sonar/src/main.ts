@@ -60,9 +60,11 @@ export function callImpl(input: CallToolRequest): CallToolResult {
 
   const args = input.params.arguments;
 
+  args.model ||= "sonar";
+
   // Build the request body
   const requestBody: ChatCompletionRequest = {
-    model: args.model || "sonar",
+    model: args.model,
     messages: args.messages,
     temperature: args.temperature,
     max_tokens: args.max_tokens,
@@ -103,9 +105,76 @@ export function callImpl(input: CallToolRequest): CallToolResult {
   return {
     content: [{
       type: ContentType.Text,
-      text: response.body,
+      text: formatAs(
+        args.output_format || "markdown",
+        response.body,
+      ),
     }],
   };
+}
+
+interface PerplexityChoice {
+  index: number;
+  finish_reason: string;
+  message: {
+    role: string;
+    content: string;
+  };
+  delta?: {
+    role: string;
+    content: string;
+  };
+}
+
+interface PerplexityResponse {
+  id: string;
+  model: string;
+  created: number;
+  usage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+  citations: string[];
+  object: string;
+  choices: PerplexityChoice[];
+}
+
+function formatPerplexityResponse(response: PerplexityResponse): string {
+  // Extract all content from choices
+  const contents = response.choices
+    .map((choice) => choice.message.content)
+    .filter(Boolean)
+    .join("\n\n");
+
+  // Format citations as markdown links
+  const citationLinks = response.citations
+    .map((url, index) => `[${index + 1}] ${url}`)
+    .join("\n");
+
+  // Combine content and citations with a separator
+  const formattedOutput = `
+${contents}
+
+---
+References:
+${citationLinks}
+`.trim();
+
+  return formattedOutput;
+}
+
+function formatAs(format: string, data: string) {
+  if (format === "markdown") {
+    try {
+      const response = JSON.parse(data) as PerplexityResponse;
+      return formatPerplexityResponse(response);
+    } catch (err) {
+      return "There was an error converting the response to markdown, please try again but set the output_format to json.";
+    }
+  }
+
+  return data;
 }
 
 export function describeImpl(): ListToolsResult {
@@ -118,7 +187,8 @@ export function describeImpl(): ListToolsResult {
         properties: {
           model: {
             type: "string",
-            description: "The name of the model to use (e.g. 'sonar')",
+            description:
+              "The name of the model to use (e.g. 'sonar', 'sonar-pro', 'sonar-reasoning')",
           },
           messages: {
             type: "array",
@@ -137,6 +207,7 @@ export function describeImpl(): ListToolsResult {
             },
             description: "The messages to send to the model",
           },
+
           temperature: {
             type: "number",
             description: "Controls randomness (0-2)",
@@ -172,6 +243,12 @@ export function describeImpl(): ListToolsResult {
             type: "string",
             enum: ["month", "week", "day", "hour"],
             description: "Filter search results by recency",
+          },
+          output_format: {
+            type: "string",
+            enum: ["json", "markdown"],
+            description:
+              "Format the output from the API call in JSON or Markdown - if Markdown, just report it back directly as-is.",
           },
         },
         required: ["messages"],
