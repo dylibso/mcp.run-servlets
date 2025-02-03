@@ -27,6 +27,12 @@ export function test() {
       const inputSchemaIsAnObject = !!tool.inputSchema && typeof tool.inputSchema === "object";
       Test.assert(`Tool input schema is an object`, inputSchemaIsAnObject, '');
 
+      const inputSchemaHasProperties = !!tool.inputSchema && !!(tool.inputSchema as any).properties && typeof (tool.inputSchema as any).properties === "object";
+      Test.assert(`Tool inputSchema.properties must be an object`, inputSchemaHasProperties, '');
+
+      const inputSchemaHasTypeObject = !!tool.inputSchema && !!(tool.inputSchema as any).type && (tool.inputSchema as any).type === "object";
+      Test.assert(`Tool inputSchema.type must be 'object'`, inputSchemaHasTypeObject, '');
+
       validateInputSchema(tool);
     });
   }
