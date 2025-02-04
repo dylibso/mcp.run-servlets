@@ -170,6 +170,7 @@ def describe() -> ListToolsResult:
                 description="Lists all files and directories in the root directory of your Obsidian vault.",
                 inputSchema={
                     "type": "object",
+                    "properties": {},
                 },
             ),
             ToolDescription(
