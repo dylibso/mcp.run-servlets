@@ -1,4 +1,28 @@
-import { CallToolRequest, CallToolResult, ListToolsResult, ContentType, ToolDescription } from "./pdk";
+import {
+  CallToolRequest,
+  CallToolResult,
+  ContentType,
+  ListToolsResult,
+  ToolDescription,
+} from "./pdk";
+
+interface MessageOptions {
+  text?: string;
+  blocks?: any[];
+  attachments?: any[];
+  thread_ts?: string;
+  markdown_text?: string;
+  mrkdwn?: boolean;
+  parse?: string;
+  link_names?: boolean;
+  unfurl_links?: boolean;
+  unfurl_media?: boolean;
+  metadata?: any;
+  icon_emoji?: string;
+  icon_url?: string;
+  username?: string;
+  reply_broadcast?: boolean;
+}
 
 class SlackClient {
   private botHeaders: { Authorization: string; "Content-Type": string };
@@ -26,19 +50,64 @@ class SlackClient {
 
     return Http.request({
       url: `https://slack.com/api/conversations.list?${params}`,
-      headers: this.botHeaders
-    }).body
+      headers: this.botHeaders,
+    }).body;
   }
 
-  postMessage(channel_id: string, text: string): string {
+  postMessage(channel_id: string, options: MessageOptions): string {
+    // Ensure at least one of text, blocks, or attachments is provided
+    if (
+      !options.text && !options.blocks && !options.attachments &&
+      !options.markdown_text
+    ) {
+      throw new Error(
+        "At least one of text, blocks, attachments, or markdown_text must be provided",
+      );
+    }
+
+    // Construct the message payload
+    const payload: any = {
+      channel: channel_id,
+      ...options,
+    };
+
+    // If markdown_text is provided, use it as text and enable mrkdwn
+    if (options.markdown_text) {
+      payload.text = options.markdown_text;
+      payload.mrkdwn = true;
+      delete payload.markdown_text; // Remove the custom field before sending
+    }
+
+    // Ensure blocks and attachments are properly stringified
+    if (payload.blocks && typeof payload.blocks === "string") {
+      try {
+        payload.blocks = JSON.parse(payload.blocks);
+      } catch (e) {
+        throw new Error("Invalid blocks JSON string");
+      }
+    }
+
+    if (payload.attachments && typeof payload.attachments === "string") {
+      try {
+        payload.attachments = JSON.parse(payload.attachments);
+      } catch (e) {
+        throw new Error("Invalid attachments JSON string");
+      }
+    }
+
+    if (payload.metadata && typeof payload.metadata === "string") {
+      try {
+        payload.metadata = JSON.parse(payload.metadata);
+      } catch (e) {
+        throw new Error("Invalid metadata JSON string");
+      }
+    }
+
     return Http.request({
       url: "https://slack.com/api/chat.postMessage",
       method: "POST",
       headers: this.botHeaders,
-    }, JSON.stringify({
-      channel: channel_id,
-      text: text,
-    })).body
+    }, JSON.stringify(payload)).body;
   }
 
   postReply(
@@ -46,16 +115,18 @@ class SlackClient {
     thread_ts: string,
     text: string,
   ): string {
-    return Http.request({
-      url:"https://slack.com/api/chat.postMessage",
-      method: "POST",
-      headers: this.botHeaders,
-    }, JSON.stringify({
+    return Http.request(
+      {
+        url: "https://slack.com/api/chat.postMessage",
+        method: "POST",
+        headers: this.botHeaders,
+      },
+      JSON.stringify({
         channel: channel_id,
         thread_ts: thread_ts,
         text: text,
-      })
-    ).body
+      }),
+    ).body;
   }
 
   addReaction(
@@ -63,16 +134,18 @@ class SlackClient {
     timestamp: string,
     reaction: string,
   ): string {
-    return Http.request({
-      url: "https://slack.com/api/reactions.add",
-      method: "POST",
-      headers: this.botHeaders,
-    }, JSON.stringify({
+    return Http.request(
+      {
+        url: "https://slack.com/api/reactions.add",
+        method: "POST",
+        headers: this.botHeaders,
+      },
+      JSON.stringify({
         channel: channel_id,
         timestamp: timestamp,
         name: reaction,
-      })
-    ).body
+      }),
+    ).body;
   }
 
   getChannelHistory(channel_id: string, limit: number = 10): string {
@@ -80,11 +153,11 @@ class SlackClient {
       channel: channel_id,
       limit: limit.toString(),
     });
-  
+
     return Http.request({
       url: `https://slack.com/api/conversations.history?${params}`,
-      headers: this.botHeaders
-    }).body
+      headers: this.botHeaders,
+    }).body;
   }
 
   getThreadReplies(channel_id: string, thread_ts: string): string {
@@ -95,9 +168,8 @@ class SlackClient {
 
     return Http.request({
       url: `https://slack.com/api/conversations.replies?${params}`,
-      headers: this.botHeaders
-    },
-    ).body;
+      headers: this.botHeaders,
+    }).body;
   }
 
   getUsers(limit: number = 100, cursor?: string): string {
@@ -112,8 +184,8 @@ class SlackClient {
 
     return Http.request({
       url: `https://slack.com/api/users.list?${params}`,
-      headers: this.botHeaders
-    }).body
+      headers: this.botHeaders,
+    }).body;
   }
 
   getUserProfile(user_id: string): string {
@@ -124,8 +196,8 @@ class SlackClient {
 
     return Http.request({
       url: `https://slack.com/api/users.profile.get?${params}`,
-      headers: this.botHeaders
-    }).body
+      headers: this.botHeaders,
+    }).body;
   }
 }
 
@@ -134,11 +206,11 @@ function ErrorContent(s: string) {
     content: [
       {
         text: s,
-        type: ContentType.Text
+        type: ContentType.Text,
       },
     ],
-    isError: true
-  }
+    isError: true,
+  };
 }
 
 /**
@@ -150,87 +222,87 @@ function ErrorContent(s: string) {
  * @returns {CallToolResult} The servlet's response to the given tool call
  */
 export function callImpl(input: CallToolRequest): CallToolResult {
-  const botToken = Config.get('SLACK_BOT_TOKEN');
-  const teamId = Config.get('SLACK_TEAM_ID');
+  const botToken = Config.get("SLACK_BOT_TOKEN");
+  const teamId = Config.get("SLACK_TEAM_ID");
   if (!botToken) {
-    return ErrorContent('Config SLACK_BOT_TOKEN not provided');
+    return ErrorContent("Config SLACK_BOT_TOKEN not provided");
   }
   if (!teamId) {
-    return ErrorContent('Config SLACK_TEAM_ID not provided')
+    return ErrorContent("Config SLACK_TEAM_ID not provided");
   }
 
   const slackClient = new SlackClient(botToken as string, teamId as string);
-  let contentText = 'unset response'
+  let contentText = "unset response";
   switch (input.params.name) {
-    case 'slack_list_channels': {
-      const {cursor, limit} = input.params.arguments || {}
-      contentText = slackClient.getChannels(limit, cursor)
-      break
+    case "slack_list_channels": {
+      const { cursor, limit } = input.params.arguments || {};
+      contentText = slackClient.getChannels(limit, cursor);
+      break;
     }
-    case 'slack_post_message': {
-      const {channel_id, text} = input.params.arguments || {}
-      if (!channel_id || !text) {
-        return ErrorContent('channel_id or text is missing')
-      }
-      contentText = slackClient.postMessage(channel_id, text)
-      break
-    }
-    case 'slack_reply_to_thread': {
-      const {channel_id, thread_ts, text} = input.params.arguments || {}
-      if (!channel_id || !thread_ts || !text) {
-        return ErrorContent('channel_id or thread_ts or text is missing')
-      }
-      contentText = slackClient.postReply(channel_id, thread_ts, text)
-      break
-    }
-    case 'slack_add_reaction': {
-      const {channel_id, timestamp, reaction} = input.params.arguments || {}
-      if (!channel_id || !timestamp || !reaction) {
-        return ErrorContent('channel_id or timestamp or reaction is missing')
-      }
-      contentText = slackClient.addReaction(channel_id, timestamp, reaction)
-      break
-    }
-    case 'slack_get_channel_history': {
-      const {channel_id, limit} = input.params.arguments || {}
+    case "slack_post_message": {
+      const { channel_id, ...messageOptions } = input.params.arguments || {};
       if (!channel_id) {
-        return ErrorContent('channel_id not provided')
+        return ErrorContent("channel_id is missing");
       }
-      contentText = slackClient.getChannelHistory(channel_id, limit)
-      break
+      contentText = slackClient.postMessage(channel_id, messageOptions);
+      break;
     }
-    case 'slack_get_thread_replies': {
-      const {channel_id, thread_ts} = input.params.arguments || {}
+    case "slack_reply_to_thread": {
+      const { channel_id, thread_ts, text } = input.params.arguments || {};
+      if (!channel_id || !thread_ts || !text) {
+        return ErrorContent("channel_id or thread_ts or text is missing");
+      }
+      contentText = slackClient.postReply(channel_id, thread_ts, text);
+      break;
+    }
+    case "slack_add_reaction": {
+      const { channel_id, timestamp, reaction } = input.params.arguments || {};
+      if (!channel_id || !timestamp || !reaction) {
+        return ErrorContent("channel_id or timestamp or reaction is missing");
+      }
+      contentText = slackClient.addReaction(channel_id, timestamp, reaction);
+      break;
+    }
+    case "slack_get_channel_history": {
+      const { channel_id, limit } = input.params.arguments || {};
+      if (!channel_id) {
+        return ErrorContent("channel_id not provided");
+      }
+      contentText = slackClient.getChannelHistory(channel_id, limit);
+      break;
+    }
+    case "slack_get_thread_replies": {
+      const { channel_id, thread_ts } = input.params.arguments || {};
       if (!channel_id || !thread_ts) {
-        return ErrorContent('channel_id or thread_ts is missing')
+        return ErrorContent("channel_id or thread_ts is missing");
       }
-      contentText = slackClient.getThreadReplies(channel_id, thread_ts)
-      break
+      contentText = slackClient.getThreadReplies(channel_id, thread_ts);
+      break;
     }
-    case 'slack_get_users': {
-      const {cursor, limit} = input.params.arguments || {}
-      contentText = slackClient.getUsers(limit, cursor)
-      break
+    case "slack_get_users": {
+      const { cursor, limit } = input.params.arguments || {};
+      contentText = slackClient.getUsers(limit, cursor);
+      break;
     }
-    case 'slack_get_user_profile': {
-      const user_id = input.params.arguments?.user_id
+    case "slack_get_user_profile": {
+      const user_id = input.params.arguments?.user_id;
       if (!user_id) {
-        return ErrorContent('user_id is missing')
+        return ErrorContent("user_id is missing");
       }
-      contentText = slackClient.getUserProfile(user_id)
-      break
+      contentText = slackClient.getUserProfile(user_id);
+      break;
     }
     default:
-      return ErrorContent(`Unknown command ${input.params.name}`)
+      return ErrorContent(`Unknown command ${input.params.name}`);
   }
 
   return {
     content: [
       {
         text: contentText,
-        type: ContentType.Text
+        type: ContentType.Text,
       },
-    ]
+    ],
   };
 }
 
@@ -264,7 +336,8 @@ export function describeImpl(): ListToolsResult {
 
   const postMessageTool: ToolDescription = {
     name: "slack_post_message",
-    description: "Post a new message to a Slack channel",
+    description:
+      "Post a new message to a Slack channel with support for rich formatting, blocks, and attachments. Either text, blocks, attachments, or markdown_text is required along with the channel_id.",
     inputSchema: {
       type: "object",
       properties: {
@@ -274,10 +347,77 @@ export function describeImpl(): ListToolsResult {
         },
         text: {
           type: "string",
-          description: "The message text to post",
+          description:
+            "The message text to post. Required unless blocks or attachments are provided. When blocks/attachments are used, this becomes fallback text for notifications",
+        },
+        blocks: {
+          type: "string",
+          description:
+            "A JSON string containing an array of Slack blocks for rich message formatting",
+        },
+        attachments: {
+          type: "string",
+          description:
+            "A JSON string containing an array of Slack message attachments",
+        },
+        markdown_text: {
+          type: "string",
+          description:
+            "Text formatted with markdown. Cannot be used with blocks. Limited to 12,000 characters",
+        },
+        thread_ts: {
+          type: "string",
+          description:
+            "Timestamp of another message to reply to, making this message a thread reply",
+        },
+        reply_broadcast: {
+          type: "boolean",
+          description:
+            "When replying to a thread, whether to also send the message to the channel",
+        },
+        parse: {
+          type: "string",
+          description:
+            "Change how message text is treated. Can be 'none' or 'full'",
+        },
+        mrkdwn: {
+          type: "boolean",
+          description:
+            "Whether to parse markdown-like syntax in the message. Defaults to true",
+        },
+        link_names: {
+          type: "boolean",
+          description: "Find and link user groups",
+        },
+        unfurl_links: {
+          type: "boolean",
+          description:
+            "Whether to enable unfurling of primarily text-based content",
+        },
+        unfurl_media: {
+          type: "boolean",
+          description: "Whether to enable unfurling of media content",
+        },
+        metadata: {
+          type: "string",
+          description:
+            "JSON string with event_type and event_payload fields for message metadata",
+        },
+        icon_emoji: {
+          type: "string",
+          description:
+            "Emoji to use as the icon for this message. Overrides icon_url",
+        },
+        icon_url: {
+          type: "string",
+          description: "URL to an image to use as the icon for this message",
+        },
+        username: {
+          type: "string",
+          description: "Set your bot's user name for this message",
         },
       },
-      required: ["channel_id", "text"],
+      required: ["channel_id"],
     },
   };
 
@@ -329,7 +469,8 @@ export function describeImpl(): ListToolsResult {
 
   const getChannelHistoryTool: ToolDescription = {
     name: "slack_get_channel_history",
-    description: "Get recent messages from a channel. The names of the 'U' ids are available with slack_get_users",
+    description:
+      "Get recent messages from a channel. The names of the 'U' ids are available with slack_get_users",
     inputSchema: {
       type: "object",
       properties: {
@@ -379,7 +520,8 @@ export function describeImpl(): ListToolsResult {
         },
         limit: {
           type: "number",
-          description: "Maximum number of users to return (default 100, max 200)",
+          description:
+            "Maximum number of users to return (default 100, max 200)",
           default: 100,
         },
       },
@@ -402,6 +544,15 @@ export function describeImpl(): ListToolsResult {
   };
 
   return {
-    tools: [listChannelsTool, postMessageTool, replyToThreadTool, addReactionTool, getChannelHistoryTool, getThreadRepliesTool, getUsersTool, getUserProfileTool]
+    tools: [
+      listChannelsTool,
+      postMessageTool,
+      replyToThreadTool,
+      addReactionTool,
+      getChannelHistoryTool,
+      getThreadRepliesTool,
+      getUsersTool,
+      getUserProfileTool,
+    ],
   };
 }
