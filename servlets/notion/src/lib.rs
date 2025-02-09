@@ -602,20 +602,68 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
                 input_schema: serde_json::json!({
                     "type": "object",
                     "properties": {
-                    "parent": {
-                    "type": "object",
-                    "description": "Parent object of the database"
-                },
-                    "title": {
-                    "type": "array",
-                    "description": "Title of database as it appears in Notion. An array of rich text objects.",
-                    "items": rich_text_schema
-                },
-                    "properties": {
-                    "type": "object",
-                    "description": "Property schema of database. The keys are the names of properties as they appear in Notion and the values are property schema objects."
-                }
-                },
+                        "parent": {
+                            "type": "object",
+                            "description": "Parent object of the database"
+                        },
+                        "title": {
+                            "type": "array",
+                            "description": "Title of database as it appears in Notion. An array of rich text objects.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "description": "Type of rich text object"
+                                    },
+                                    "text": {
+                                        "type": "object",
+                                        "description": "Text content and its attributes",
+                                        "properties": {
+                                            "content": {
+                                                "type": "string",
+                                                "description": "The actual text content"
+                                            },
+                                            "link": {
+                                                "type": "object",
+                                                "description": "Link data if the text is a link"
+                                            }
+                                        }
+                                    },
+                                    "annotations": {
+                                        "type": "object",
+                                        "description": "Formatting annotations for the text",
+                                        "properties": {
+                                            "bold": {
+                                                "type": "boolean",
+                                                "description": "Whether the text is bold"
+                                            },
+                                            "code": {
+                                                "type": "boolean",
+                                                "description": "Whether the text is code format"
+                                            },
+                                            "italic": {
+                                                "type": "boolean",
+                                                "description": "Whether the text is italicized"
+                                            },
+                                            "strikethrough": {
+                                                "type": "boolean",
+                                                "description": "Whether the text has a strikethrough"
+                                            },
+                                            "underline": {
+                                                "type": "boolean",
+                                                "description": "Whether the text is underlined"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "properties": {
+                            "type": "object",
+                            "description": "Property schema of database. The keys are the names of properties as they appear in Notion and the values are property schema objects."
+                        }
+                    },
                     "required": ["parent", "title", "properties"],
                     "additionalProperties": false
                 }).as_object().unwrap().clone(),
@@ -678,26 +726,74 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
                 input_schema: serde_json::json!({
                     "type": "object",
                     "properties": {
-                    "parent": {
-                    "type": "object",
-                    "description": "Parent object that specifies the page to comment on",
-                    "properties": {
-                    "page_id": {
-                    "type": "string",
-                    "description": "The ID of the page to comment on. ".to_string() + COMMON_ID_DESCRIPTION
-                }
-                }
-                },
-                    "discussion_id": {
-                    "type": "string",
-                    "description": "The ID of an existing discussion thread to add a comment to. ".to_string() + COMMON_ID_DESCRIPTION
-                },
-                    "rich_text": {
-                    "type": "array",
-                    "description": "Array of rich text objects representing the comment content.",
-                    "items": rich_text_schema
-                }
-                },
+                        "parent": {
+                            "type": "object",
+                            "description": "Parent object that specifies the page to comment on",
+                            "properties": {
+                                "page_id": {
+                                    "type": "string",
+                                    "description": "The ID of the page to comment on. ".to_string() + COMMON_ID_DESCRIPTION
+                                }
+                            }
+                        },
+                        "discussion_id": {
+                            "type": "string",
+                            "description": "The ID of an existing discussion thread to add a comment to. ".to_string() + COMMON_ID_DESCRIPTION
+                        },
+                        "rich_text": {
+                            "type": "array",
+                            "description": "Array of rich text objects representing the comment content.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "description": "Type of rich text object"
+                                    },
+                                    "text": {
+                                        "type": "object",
+                                        "description": "Text content and its attributes",
+                                        "properties": {
+                                            "content": {
+                                                "type": "string",
+                                                "description": "The actual text content"
+                                            },
+                                            "link": {
+                                                "type": "object",
+                                                "description": "Link data if the text is a link"
+                                            }
+                                        }
+                                    },
+                                    "annotations": {
+                                        "type": "object",
+                                        "description": "Text formatting options",
+                                        "properties": {
+                                            "bold": {
+                                                "type": "boolean",
+                                                "description": "Whether the text is bold"
+                                            },
+                                            "code": {
+                                                "type": "boolean",
+                                                "description": "Whether the text is in code format"
+                                            },
+                                            "italic": {
+                                                "type": "boolean",
+                                                "description": "Whether the text is italicized"
+                                            },
+                                            "strikethrough": {
+                                                "type": "boolean",
+                                                "description": "Whether the text has a strikethrough"
+                                            },
+                                            "underline": {
+                                                "type": "boolean",
+                                                "description": "Whether the text is underlined"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
                     "required": ["rich_text"],
                     "additionalProperties": false
                 }).as_object().unwrap().clone(),
@@ -709,47 +805,49 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
                 input_schema: serde_json::json!({
                     "type": "object",
                     "properties": {
-                    "query": {
-                    "type": "string",
-                    "description": "Text to search for in page or database titles"
-                },
-                    "filter": {
-                    "type": "object",
-                    "description": "Filter results by object type (page or database)",
-                    "properties": {
-                    "property": {
-                    "type": "string",
-                    "description": "Must be 'object'"
-                },
-                    "value": {
-                    "type": "string",
-                    "description": "Either 'page' or 'database'"
-                }
-                }
-                },
-                    "sort": {
-                    "type": "object",
-                    "description": "Sort configuration for search results",
-                    "properties": {
-                    "direction": {
-                    "type": "string",
-                    "enum": ["ascending", "descending"]
-                },
-                    "timestamp": {
-                    "type": "string",
-                    "enum": ["last_edited_time"]
-                }
-                }
-                },
-                    "start_cursor": {
-                    "type": "string",
-                    "description": "Pagination cursor"
-                },
-                    "page_size": {
-                    "type": "integer",
-                    "description": "Number of results to return (max 100)"
-                }
-                },
+                        "query": {
+                            "type": "string",
+                            "description": "Text to search for in page or database titles"
+                        },
+                        "filter": {
+                            "type": "object",
+                            "description": "Filter results by object type (page or database)",
+                            "properties": {
+                                "property": {
+                                    "type": "string",
+                                    "description": "Must be 'object'"
+                                },
+                                "value": {
+                                    "type": "string",
+                                    "description": "Either 'page' or 'database'"
+                                }
+                            }
+                        },
+                        "sort": {
+                            "type": "object",
+                            "description": "Sort configuration for search results",
+                            "properties": {
+                                "direction": {
+                                    "type": "string",
+                                    "enum": ["ascending", "descending"],
+                                    "description": "Sort direction - ascending or descending order"
+                                },
+                                "timestamp": {
+                                    "type": "string",
+                                    "enum": ["last_edited_time"],
+                                    "description": "Timestamp field to sort by - currently only supports last_edited_time"
+                                }
+                            }
+                        },
+                        "start_cursor": {
+                            "type": "string",
+                            "description": "Pagination cursor"
+                        },
+                        "page_size": {
+                            "type": "integer",
+                            "description": "Number of results to return (max 100)"
+                        }
+                    },
                     "additionalProperties": false
                 }).as_object().unwrap().clone(),
             },

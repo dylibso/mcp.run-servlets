@@ -36,8 +36,8 @@ jobs:
         
     - name: Install TinyGo
       run: |
-        wget https://github.com/tinygo-org/tinygo/releases/download/v0.34.0/tinygo_0.34.0_amd64.deb
-        sudo dpkg -i tinygo_0.34.0_amd64.deb
+        wget https://github.com/tinygo-org/tinygo/releases/download/v0.35.0/tinygo_0.35.0_amd64.deb
+        sudo dpkg -i tinygo_0.35.0_amd64.deb
 
     - name: Install extism-js
       run: |

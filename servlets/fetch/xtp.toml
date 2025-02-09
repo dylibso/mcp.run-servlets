@@ -19,3 +19,7 @@ prepare = "bash prepare.sh"
 [[test]]
 name = "basic tests"
 with = "../../test/testsuite/dist/test.wasm"
+
+[[test]]
+name = "describe output"
+with = "../../simulations/describe-output/dist/plugin.wasm"

@@ -1,1 +1,2 @@
-plugin.wasm
+node_modules
+dist
