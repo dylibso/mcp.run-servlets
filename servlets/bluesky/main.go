@@ -14,11 +14,10 @@ import (
 )
 
 var (
-	BASE_URL        string
-	PUBLIC_BASE_URL string
-	HANDLE          string
-	PASSWORD        string
-	currentSession  Session
+	BASE_URL       string
+	HANDLE         string
+	PASSWORD       string
+	currentSession Session
 )
 
 // Called when the tool is invoked.
@@ -43,146 +42,6 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 // Note: Your servlet configs will not be set when this function is called,
 // so do not rely on config in this function
 // And returns ListToolsResult (The tools' descriptions, supporting multiple tools from a single servlet.)
-//
-//
-//
-/* "parameters": [
-     {
-       "name": "q",
-       "in": "query",
-       "description": "Search query string; syntax, phrase, boolean, and faceting is unspecified, but Lucene query syntax is recommended.",
-       "required": true,
-       "schema": {
-         "type": "string",
-         "description": "Search query string; syntax, phrase, boolean, and faceting is unspecified, but Lucene query syntax is recommended."
-       }
-     },
-     {
-       "name": "sort",
-       "in": "query",
-       "description": "Specifies the ranking order of results.",
-       "required": false,
-       "schema": {
-         "type": "string",
-         "description": "Specifies the ranking order of results.",
-         "default": "latest",
-         "enum": [
-           "top",
-           "latest"
-         ]
-       }
-     },
-     {
-       "name": "since",
-       "in": "query",
-       "description": "Filter results for posts after the indicated datetime (inclusive). Expected to use 'sortAt' timestamp, which may not match 'createdAt'. Can be a datetime, or just an ISO date (YYYY-MM-DD).",
-       "required": false,
-       "schema": {
-         "type": "string",
-         "description": "Filter results for posts after the indicated datetime (inclusive). Expected to use 'sortAt' timestamp, which may not match 'createdAt'. Can be a datetime, or just an ISO date (YYYY-MM-DD)."
-       }
-     },
-     {
-       "name": "until",
-       "in": "query",
-       "description": "Filter results for posts before the indicated datetime (not inclusive). Expected to use 'sortAt' timestamp, which may not match 'createdAt'. Can be a datetime, or just an ISO date (YYY-MM-DD).",
-       "required": false,
-       "schema": {
-         "type": "string",
-         "description": "Filter results for posts before the indicated datetime (not inclusive). Expected to use 'sortAt' timestamp, which may not match 'createdAt'. Can be a datetime, or just an ISO date (YYY-MM-DD)."
-       }
-     },
-     {
-       "name": "mentions",
-       "in": "query",
-       "description": "Filter to posts which mention the given account. Handles are resolved to DID before query-time. Only matches rich-text facet mentions.",
-       "required": false,
-       "schema": {
-         "type": "string",
-         "description": "Filter to posts which mention the given account. Handles are resolved to DID before query-time. Only matches rich-text facet mentions.",
-         "format": "at-identifier"
-       }
-     },
-     {
-       "name": "author",
-       "in": "query",
-       "description": "Filter to posts by the given account. Handles are resolved to DID before query-time.",
-       "required": false,
-       "schema": {
-         "type": "string",
-         "description": "Filter to posts by the given account. Handles are resolved to DID before query-time.",
-         "format": "at-identifier"
-       }
-     },
-     {
-       "name": "lang",
-       "in": "query",
-       "description": "Filter to posts in the given language. Expected to be based on post language field, though server may override language detection.",
-       "required": false,
-       "schema": {
-         "type": "string",
-         "description": "Filter to posts in the given language. Expected to be based on post language field, though server may override language detection.",
-         "format": "language"
-       }
-     },
-     {
-       "name": "domain",
-       "in": "query",
-       "description": "Filter to posts with URLs (facet links or embeds) linking to the given domain (hostname). Server may apply hostname normalization.",
-       "required": false,
-       "schema": {
-         "type": "string",
-         "description": "Filter to posts with URLs (facet links or embeds) linking to the given domain (hostname). Server may apply hostname normalization."
-       }
-     },
-     {
-       "name": "url",
-       "in": "query",
-       "description": "Filter to posts with links (facet links or embeds) pointing to this URL. Server may apply URL normalization or fuzzy matching.",
-       "required": false,
-       "schema": {
-         "type": "string",
-         "description": "Filter to posts with links (facet links or embeds) pointing to this URL. Server may apply URL normalization or fuzzy matching.",
-         "format": "uri"
-       }
-     },
-     {
-       "name": "tag",
-       "in": "query",
-       "description": "Filter to posts with the given tag (hashtag), based on rich-text facet or tag field. Do not include the hash (#) prefix. Multiple tags can be specified, with 'AND' matching.",
-       "required": false,
-       "schema": {
-         "type": "array",
-         "items": {
-           "type": "string",
-           "maxLength": 640
-         }
-       }
-     },
-     {
-       "name": "limit",
-       "in": "query",
-       "required": false,
-       "schema": {
-         "type": "integer",
-         "minimum": 1,
-         "maximum": 100,
-         "default": 25
-       }
-     },
-     {
-       "name": "cursor",
-       "in": "query",
-       "description": "Optional pagination mechanism; may not necessarily allow scrolling through entire result set.",
-       "required": false,
-       "schema": {
-         "type": "string",
-         "description": "Optional pagination mechanism; may not necessarily allow scrolling through entire result set."
-       }
-     }
-   ],
-*/
-//
 func Describe() (res ListToolsResult, err error) {
 	err = json.Unmarshal([]byte(`
 			{
@@ -261,8 +120,7 @@ func Describe() (res ListToolsResult, err error) {
 									"type": "string",
 									"description": "Cursor for pagination"
 								}
-							},
-							"required": ["q"]
+							}
 						}
 					}
 				]
@@ -284,7 +142,6 @@ type Session struct {
 
 func loadConfig() error {
 	BASE_URL, _ = pdk.GetConfig("BASE_URL") // default https://bsky.social
-	PUBLIC_BASE_URL, _ = pdk.GetConfig("PUBLIC_BASE_URL")
 	HANDLE, _ = pdk.GetConfig("HANDLE")
 	PASSWORD, _ = pdk.GetConfig("APP_PASSWORD")
 
