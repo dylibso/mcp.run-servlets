@@ -21,6 +21,8 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 	switch input.Params.Name {
 	case "post":
 		return post(input.Params.Arguments.(map[string]any))
+	case "reply":
+		return reply(input.Params.Arguments.(map[string]any))
 	case "search":
 		return search(input.Params.Arguments.(map[string]any))
 	default:
@@ -54,10 +56,29 @@ func Describe() (res ListToolsResult, err error) {
 						}
 					},
 					{
+						"name": "reply",
+						"description": "Reply to a message for a given at:// URI",
+						"inputSchema": {
+							"type": "object",
+							"properties": {
+								"text": {
+									"type": "string",
+									"description": "The text of the post"
+								},
+								"parent_uri": {
+									"type": "string",
+									"description": "The at:// URI of the post we are replying to"
+								}
+							},
+							"required": ["text"]
+						}
+					},
+					{
 						"name": "search",
 						"description": "Search for posts on Bluesky",
 						"inputSchema": {
 							"type": "object",
+							"required": ["q"],
 							"properties": {
 								"q": {
 									"type": "string",

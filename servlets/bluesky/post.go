@@ -10,6 +10,8 @@ import (
 	"github.com/extism/go-pdk"
 )
 
+var ()
+
 func post(args map[string]any) (CallToolResult, error) {
 	if err := loadConfig(); err != nil {
 		return callToolError(fmt.Sprintf("failed to load config: %s", err.Error())), nil
@@ -35,7 +37,6 @@ func doPost(text string, reply *Reply) (CallToolResult, error) {
 	req := pdk.NewHTTPRequest(pdk.MethodPost, url)
 	req.SetHeader("Content-Type", "application/json")
 	req.SetHeader("Authorization", "Bearer "+currentSession.AccessJwt)
-	pdk.Log(pdk.LogInfo, currentSession.AccessJwt)
 	jsonBytes, err := json.Marshal(map[string]any{
 		"repo":       currentSession.DID,
 		"collection": "app.bsky.feed.post",
@@ -73,7 +74,8 @@ type Span struct {
 func parseMentions(text string) []Span {
 	spans := []Span{}
 	// regex based on: https://atproto.com/specs/handle#handle-identifier-syntax
-	mentionRegex := regexp.MustCompile(`[$|\W](@([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)`)
+	// mentionRegex := regexp.MustCompile(`[$|\W](@([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)`)
+	mentionRegex := regexp.MustCompile(`(@[a-zA-Z0-9.-]+)`)
 	textBytes := []byte(text)
 
 	matches := mentionRegex.FindAllSubmatchIndex(textBytes, -1)
@@ -96,9 +98,9 @@ func parseURLs(text string) []Span {
 	spans := []Span{}
 	// partial/naive URL regex based on: https://stackoverflow.com/a/3809435
 	// tweaked to disallow some training punctuation
-	urlRegex := regexp.MustCompile(`[$|\W](https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*[-a-zA-Z0-9@%_\+~#//=])?)`)
 	textBytes := []byte(text)
 
+	urlRegex := regexp.MustCompile(`(https?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}[a-zA-Z0-9/\-._?=&%]*)`)
 	matches := urlRegex.FindAllSubmatchIndex(textBytes, -1)
 	for _, match := range matches {
 		start := match[2]
@@ -143,21 +145,18 @@ func parseFacets(text string) ([]Facet, error) {
 	mentions := parseMentions(text)
 	for _, m := range mentions {
 		// Create HTTP request to resolve handle
-		resp, err := http.Get("https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle=" + m.Handle)
-		if err != nil {
-			continue
-		}
-		defer resp.Body.Close()
+		req := pdk.NewHTTPRequest(pdk.MethodGet, "https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle="+m.Handle)
+		resp := req.Send()
 
 		// If the handle can't be resolved, just skip it!
 		// It will be rendered as text in the post instead of a link
-		if resp.StatusCode == 400 {
+		if resp.Status() == 400 {
 			continue
 		}
 
 		// Parse response
 		var resolveResp ResolveHandleResponse
-		if err := json.NewDecoder(resp.Body).Decode(&resolveResp); err != nil {
+		if err := json.Unmarshal(resp.Body(), &resolveResp); err != nil {
 			continue
 		}
 
