@@ -10,13 +10,6 @@ import (
 	"github.com/extism/go-pdk"
 )
 
-type Record struct {
-	Type      string  `json:"$type"`
-	Text      string  `json:"text"`
-	Facets    []Facet `json:"facets"`
-	CreatedAt string  `json:"createdAt"`
-}
-
 func post(args map[string]any) (CallToolResult, error) {
 	if err := loadConfig(); err != nil {
 		return callToolError(fmt.Sprintf("failed to load config: %s", err.Error())), nil
@@ -25,11 +18,14 @@ func post(args map[string]any) (CallToolResult, error) {
 		return callToolError(fmt.Sprintf("failed to login: %s", err.Error())), nil
 	}
 
-	text, ok := args["text"].(string)
-	if !ok {
+	if text, ok := args["text"].(string); !ok {
 		return callToolError("missing text argument"), nil
+	} else {
+		return doPost(text, nil)
 	}
+}
 
+func doPost(text string, reply *Reply) (CallToolResult, error) {
 	facets, err := parseFacets(text)
 	if err != nil {
 		return callToolError(fmt.Sprintf("failed to parse facets: %s", err.Error())), err
@@ -48,6 +44,7 @@ func post(args map[string]any) (CallToolResult, error) {
 			Text:      text,
 			CreatedAt: time.Now().Format(time.RFC3339),
 			Facets:    facets,
+			Reply:     reply,
 		},
 	})
 	if err != nil {
