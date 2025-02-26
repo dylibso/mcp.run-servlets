@@ -25,6 +25,8 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 		return reply(input.Params.Arguments.(map[string]any))
 	case "search":
 		return search(input.Params.Arguments.(map[string]any))
+	case "get_thread":
+		return getThread(input.Params.Arguments.(map[string]any))
 	default:
 		return CallToolResult{IsError: some(true), Content: []Content{{
 			Type: ContentTypeText,
@@ -74,8 +76,30 @@ func Describe() (res ListToolsResult, err error) {
 						}
 					},
 					{
+						"name": "get_thread",
+						"description": "Get a thread from a given AT-URI. Use this to find replies to an existing post. For instance, this is useful to make sure a bot is not replying to the same message twice.",
+						"inputSchema": {
+							"type": "object",
+							"required": ["uri"],
+							"properties": {
+								"uri": {
+									"type": "string",
+									"description": "AT-URI to post record (e.g. as returned by the search)"
+								},
+								"depth": {
+									"type": "integer",
+									"description": "How many levels of reply depth should be included in response. (default: 6, limit <=1000)"
+								},
+								"parentHeight": {
+									"type": "integer",
+									"description": "How many levels of parent (and grandparent, etc) post to include. (default: 80, limit <=1000)"
+								}
+							}
+						}
+					},
+					{
 						"name": "search",
-						"description": "Search for posts on Bluesky",
+						"description": "Search for posts on Bluesky. The 'q' parameter is required",
 						"inputSchema": {
 							"type": "object",
 							"required": ["q"],

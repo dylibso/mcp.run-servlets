@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
 	"time"
 
@@ -62,6 +63,46 @@ func doPost(text string, reply *Reply) (CallToolResult, error) {
 			Text: some(string(resp.Body())),
 		}},
 	}, nil
+}
+
+func getThread(args map[string]any) (CallToolResult, error) {
+	if err := loadConfig(); err != nil {
+		return callToolError(fmt.Sprintf("failed to load config: %s", err.Error())), nil
+	}
+	if err := loginSession(); err != nil {
+		return callToolError(fmt.Sprintf("failed to login: %s", err.Error())), nil
+	}
+	uri, ok := args["uri"].(string)
+	if !ok {
+		return callToolError("missing uri"), nil
+	}
+	depth, ok := args["depth"].(int)
+	if !ok {
+		depth = 6
+	}
+	parentHeight, ok := args["parentHeight"].(int)
+	if !ok {
+		parentHeight = 80
+	}
+	q := url.Values{}
+	q.Set("uri", uri)
+	q.Set("depth", fmt.Sprintf("%d", depth))
+	q.Set("parentHeight", fmt.Sprintf("%d", parentHeight))
+
+	url := fmt.Sprintf("%s/xrpc/app.bsky.feed.getPostThread?%s", BASE_URL, q.Encode())
+	req := pdk.NewHTTPRequest(pdk.MethodGet, url)
+	req.SetHeader("Content-Type", "application/json")
+	req.SetHeader("Authorization", "Bearer "+currentSession.AccessJwt)
+	resp := req.Send()
+	if resp.Status() != http.StatusOK {
+		return callToolError(fmt.Sprintf("failed to get thread: %d\n %s", resp.Status(), string(resp.Body()))), nil
+	}
+	// Fetch the thread using the provided URI
+	// Implement the logic to fetch the thread here
+	return CallToolResult{Content: []Content{{
+		Type: ContentTypeText,
+		Text: some(string(resp.Body())),
+	}}}, nil
 }
 
 type Span struct {
