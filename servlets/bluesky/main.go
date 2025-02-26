@@ -23,8 +23,8 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 		return post(input.Params.Arguments.(map[string]any))
 	case "reply":
 		return reply(input.Params.Arguments.(map[string]any))
-	case "search":
-		return search(input.Params.Arguments.(map[string]any))
+	case "latest_mentions":
+		return latestMentions(input.Params.Arguments.(map[string]any))
 	case "get_thread":
 		return getThread(input.Params.Arguments.(map[string]any))
 	default:
@@ -98,65 +98,18 @@ func Describe() (res ListToolsResult, err error) {
 						}
 					},
 					{
-						"name": "search",
-						"description": "Search for posts on Bluesky. The 'q' parameter is required",
+						"name": "latest_mentions",
+						"description": "Search for your latest mentions on Bluesky.",
 						"inputSchema": {
 							"type": "object",
-							"required": ["q"],
 							"properties": {
-								"q": {
+								"within": {
 									"type": "string",
-									"description": "Search query"
-								},
-								"sort": {
-									"type": "string",
-									"description": "Sort order"
-								},
-								"since": {
-									"type": "string",
-									"description": "Timestamp of the last seen message"
-								},
-								"until": {
-									"type": "string",
-									"description": "Timestamp of the first seen message"
-								},
-								"mentions": {
-									"type": "array",
-									"items": {
-										"type": "string"
-									},
-									"description": "List of mentions"
-								},
-								"author": {
-									"type": "string",
-									"description": "Filter to posts by the given account. Handles are resolved to DID before query-time."
-								},
-								"lang": {
-									"type": "string",
-									"description": "Filter to posts in the given language"
-								},
-								"domain": {
-									"type": "string",
-									"description": "Filter to posts with URLs (facet links or embeds) linking to the given domain (hostname). Server may apply hostname normalization."
-								},
-								"url": {
-									"type": "string",
-									"description": "Filter to posts with links (facet links or embeds) linking to the given URL. Server may apply URL normalization."
-								},
-								"tag": {
-									"type": "array",
-									"items": {
-										"type": "string"
-									},
-									"description": "Filter to posts with the given tag (hashtag), based on rich-text facet or tag field. Do not include the hash (#) prefix. Multiple tags can be specified, with 'AND' matching. (<=640 characters)"
+									"description": "Find mentions within now and the given duration. A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as \"300ms\", \"-1.5h\" or \"2h45m\". Valid time units are \"ns\", \"us\" (or \"µs\"), \"ms\", \"s\", \"m\", \"h\". default: 5m"
 								},
 								"limit": {
 									"type": "integer",
 									"description": "Maximum number of posts to return (>=1, <=100) default: 25"
-								},
-								"cursor": {
-									"type": "string",
-									"description": "Cursor for pagination"
 								}
 							}
 						}
