@@ -67,9 +67,9 @@ func Describe() (res ListToolsResult, err error) {
 									"type": "string",
 									"description": "The text of the post"
 								},
-								"parent_uri": {
+								"reply_to": {
 									"type": "string",
-									"description": "The at:// URI of the post we are replying to"
+									"description": "The at:// URI of the post we are replying to. Additionally, if the URI is a web URI (e.g. https://bsky.app/profile/<DID>/post/<RKEY>), it will be converted to an AT URI (e.g. at://<DID>/app.bsky.feed.post/<RKEY>)."
 								}
 							},
 							"required": ["text"]

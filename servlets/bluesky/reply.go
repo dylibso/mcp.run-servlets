@@ -20,16 +20,28 @@ func reply(args map[string]any) (CallToolResult, error) {
 	if text, ok := args["text"].(string); !ok {
 		return callToolError("missing text argument"), nil
 	} else {
-		parentUri, ok := args["parent_uri"].(string)
+		replyTo, ok := args["reply_to"].(string)
 		if !ok {
-			return callToolError("missing parent_uri argument"), nil
+			return callToolError("missing reply_to argument"), nil
 		}
+		parentUri := webUriToAT(replyTo)
 		refs, err := getReplyRefs(parentUri)
 		if err != nil {
 			return callToolError(fmt.Sprintf("failed to get reply refs: %s", err.Error())), nil
 		}
 		return doPost(text, refs)
 	}
+}
+
+// webUriToAT converts each URL to an AT URI as follows:
+// - https://bsky.app/profile/<DID>/post/<RKEY>
+// - at://<DID>/app.bsky.feed.post/<RKEY>
+func webUriToAT(uri string) string {
+	if strings.HasPrefix(uri, "https://bsky.app/profile/") {
+		parts := strings.Split(uri, "/")
+		return fmt.Sprintf("at://%s/app.bsky.feed.post/%s", parts[3], parts[5])
+	}
+	return uri
 }
 
 type UriParts struct {

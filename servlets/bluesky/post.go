@@ -11,8 +11,6 @@ import (
 	"github.com/extism/go-pdk"
 )
 
-var ()
-
 func post(args map[string]any) (CallToolResult, error) {
 	if err := loadConfig(); err != nil {
 		return callToolError(fmt.Sprintf("failed to load config: %s", err.Error())), nil
