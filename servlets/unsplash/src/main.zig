@@ -181,12 +181,12 @@ pub fn describe() !schema.ListToolsResult {
         \\     "description": "Get a photo by ID from Unsplash",
         \\     "inputSchema": {
         \\         "type": "object",
+        \\         "required": ["id"],
         \\         "properties": {
         \\           "id": {
         \\             "type": "string",
         \\             "description": "The photo ID"
-        \\           },
-        \\           "required": ["id"]
+        \\           }
         \\         }
         \\     }
         \\   },
@@ -195,6 +195,7 @@ pub fn describe() !schema.ListToolsResult {
         \\     "description": "Search photos from Unsplash",
         \\     "inputSchema": {
         \\         "type": "object",
+        \\         "required": ["query"],
         \\         "properties": {
         \\           "page": {
         \\             "type": "integer",
@@ -223,8 +224,7 @@ pub fn describe() !schema.ListToolsResult {
         \\         "query": {
         \\           "type": "string",
         \\           "description": "Search terms"
-        \\         },
-        \\         "required": ["query"]
+        \\         }
         \\       }
         \\     }
         \\   }]
