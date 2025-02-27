@@ -1,12 +1,26 @@
 # BlueSky Servlet
 
 Implements a reduced subset of the BlueSky OpenAPI spec.
-Currently it supports posting and replying to a post,
-searching, and getting threads; i.e., respectively:
+Currently it supports [posting and replying to a post][post] and [getting threads][thread].
 
-- https://docs.bsky.app/docs/api/com-atproto-repo-put-record
-- https://docs.bsky.app/docs/api/app-bsky-feed-search-posts
-- https://docs.bsky.app/docs/api/app-bsky-feed-get-post-thread
+Additionally, it provides the `latest_mentions` tool, returning a list
+a list of mentions to the given handle within a specified amount of time 
+(e.g. "5 minutes ago", `5m`); this tool uses the [search][search] feature
+under the hood.
+
+[post]: https://docs.bsky.app/docs/api/com-atproto-repo-put-record
+[search]: https://docs.bsky.app/docs/api/app-bsky-feed-search-posts
+[thread]: https://docs.bsky.app/docs/api/app-bsky-feed-get-post-thread
+
+## Config
+
+- `BASE_URL` defaults to `https://bsky.social`
+- `HANDLE` your handle
+- `PASSWORD` use an [app password](https://bsky.app/settings/app-passwords)
+
+## Domains
+
+You should grant access to `bsky.social`.
 
 ## Example
 
