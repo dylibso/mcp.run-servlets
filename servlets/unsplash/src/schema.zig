@@ -130,7 +130,7 @@ pub const ListToolsResult = struct {
 
 ///
 pub const Params = struct {
-    arguments: ?std.json.ArrayHashMap(std.json.Value) = null,
+    arguments: ?std.json.Value = null,
     name: []const u8,
 
     /// Internally used function, should not be called by plugin authors.
@@ -199,7 +199,7 @@ pub const ToolDescription = struct {
     /// A description of the tool
     description: []const u8,
     /// The JSON schema describing the argument input
-    inputSchema: std.json.ArrayHashMap(std.json.Value),
+    inputSchema: std.json.Value,
     /// The name of the tool. It should match the plugin / binding name.
     name: []const u8,
 

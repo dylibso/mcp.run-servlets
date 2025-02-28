@@ -24,14 +24,20 @@ pub fn call(input: schema.CallToolRequest) !schema.CallToolResult {
     return error.PluginFunctionNotImplemented;
 }
 
-fn getPhotos(args: ?json.ArrayHashMap(std.json.Value)) !schema.CallToolResult {
+fn getPhotos(args: json.Value) !schema.CallToolResult {
     const apiKey = try plugin.getConfig("API_KEY") orelse return error.MissingConfig;
-    const page = args.?.map.get("page") orelse json.Value{ .integer = 1 };
-    const per_page = args.?.map.get("per_page") orelse json.Value{ .integer = 10 };
+
+    const params = struct {
+        page: i64 = 1,
+        per_page: i64 = 10,
+    };
+
+    std.json.parseFromValue(params, allocator, args, .{});
+
     const url = try allocPrint(
         allocator,
         "https://api.unsplash.com/photos?page={d}&per_page={d}",
-        .{ page.integer, per_page.integer },
+        .{ params.page, params.per_page },
     );
     var req = http.HttpRequest.init("GET", url);
     defer req.deinit(allocator);
@@ -57,10 +63,14 @@ fn getPhotos(args: ?json.ArrayHashMap(std.json.Value)) !schema.CallToolResult {
     };
 }
 
-fn getPhotosId(arguments: ?json.ArrayHashMap(std.json.Value)) !schema.CallToolResult {
+fn getPhotosId(args: std.json.Value) !schema.CallToolResult {
     const apiKey = try plugin.getConfig("API_KEY") orelse return error.MissingConfig;
-    const args = arguments orelse return callToolError("missing arguments");
-    const id = args.map.get("id") orelse return error.MissingArgument;
+    const params = struct {
+        id: ?[]const u8,
+    };
+    std.json.parseFromValue(params, allocator, args, .{});
+
+    const id = params.id orelse return error.MissingArgument;
     const url = try allocPrint(
         allocator,
         "https://api.unsplash.com/photos/{s}",
