@@ -71,6 +71,8 @@ func getThread(args map[string]any) (CallToolResult, error) {
 		return callToolError(fmt.Sprintf("failed to login: %s", err.Error())), nil
 	}
 	uri, ok := args["uri"].(string)
+	// allow web URIs and conver them to AT URIs
+	uri = webUriToAT(uri)
 	if !ok {
 		return callToolError("missing uri"), nil
 	}
