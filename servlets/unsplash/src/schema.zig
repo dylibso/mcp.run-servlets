@@ -130,7 +130,7 @@ pub const ListToolsResult = struct {
 
 ///
 pub const Params = struct {
-    arguments: ?std.json.Value = null,
+    arguments: ?std.json.Value,
     name: []const u8,
 
     /// Internally used function, should not be called by plugin authors.

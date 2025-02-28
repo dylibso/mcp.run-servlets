@@ -14,12 +14,13 @@ const allocator = std.heap.wasm_allocator;
 /// And returns CallToolResult (The servlet's response to the given tool call)
 pub fn call(input: schema.CallToolRequest) !schema.CallToolResult {
     const name = input.params.name;
+    const args = input.params.arguments orelse return callToolError("missing arguments");
     if (eql(u8, name, "photos")) {
-        return getPhotos(input.params.arguments);
+        return getPhotos(args);
     } else if (eql(u8, name, "photos_id")) {
-        return getPhotosId(input.params.arguments);
+        return getPhotosId(args);
     } else if (eql(u8, name, "search_photos")) {
-        return searchPhotos(input.params.arguments);
+        return searchPhotos(args);
     }
     return error.PluginFunctionNotImplemented;
 }
@@ -32,12 +33,13 @@ fn getPhotos(args: json.Value) !schema.CallToolResult {
         per_page: i64 = 10,
     };
 
-    std.json.parseFromValue(params, allocator, args, .{});
+    const parsed = try std.json.parseFromValue(params, allocator, args, .{});
+    const values = parsed.value;
 
     const url = try allocPrint(
         allocator,
         "https://api.unsplash.com/photos?page={d}&per_page={d}",
-        .{ params.page, params.per_page },
+        .{ values.page, values.per_page },
     );
     var req = http.HttpRequest.init("GET", url);
     defer req.deinit(allocator);
@@ -68,13 +70,14 @@ fn getPhotosId(args: std.json.Value) !schema.CallToolResult {
     const params = struct {
         id: ?[]const u8,
     };
-    std.json.parseFromValue(params, allocator, args, .{});
+    const parsed = try std.json.parseFromValue(params, allocator, args, .{});
+    const values = parsed.value;
 
-    const id = params.id orelse return error.MissingArgument;
+    const id = values.id orelse return error.MissingArgument;
     const url = try allocPrint(
         allocator,
         "https://api.unsplash.com/photos/{s}",
-        .{id.string},
+        .{id},
     );
     var req = http.HttpRequest.init("GET", url);
     defer req.deinit(allocator);
@@ -109,28 +112,43 @@ fn getPhotosId(args: std.json.Value) !schema.CallToolResult {
 // color	Filter results by color. Optional. Valid values are: black_and_white, black, white, yellow, orange, red, purple, magenta, green, teal, and blue.
 // orientation	Filter by photo orientation. Optional. (Valid values: landscape, portrait, squarish)
 
-fn searchPhotos(arguments: ?json.ArrayHashMap(std.json.Value)) !schema.CallToolResult {
+fn searchPhotos(args: std.json.Value) !schema.CallToolResult {
     const apiKey = try plugin.getConfig("API_KEY") orelse return error.MissingConfig;
-    const args = arguments orelse return callToolError("missing arguments");
-    const query = args.map.get("query") orelse return callToolError("missing query");
-    const page = args.map.get("page") orelse json.Value{ .integer = 1 };
-    const per_page = args.map.get("per_page") orelse json.Value{ .integer = 10 };
-    const order_by = args.map.get("order_by") orelse json.Value{ .string = "relevant" };
-    const content_filter = args.map.get("content_filter") orelse json.Value{ .string = "low" };
+    const params = struct {
+        query: ?[]const u8 = null,
+        page: i64 = 1,
+        per_page: i64 = 10,
+        order_by: []const u8 = "relevant",
+        content_filter: []const u8 = "low",
+        color: ?[]const u8 = null,
+        orientation: ?[]const u8 = null,
+    };
+
+    const parsed = try std.json.parseFromValue(params, allocator, args, .{});
+    const values = parsed.value;
+
+    const query = values.query orelse return callToolError("missing query");
     var color: []u8 = "";
-    if (args.map.get("color") != null) {
-        const c = args.map.get("color").?.string;
-        color = try allocPrint(allocator, "&color={s}", .{c});
+    if (values.color != null) {
+        color = try allocPrint(allocator, "&color={s}", .{values.color.?});
     }
     var orientation: []u8 = "";
-    if (args.map.get("orientation") != null) {
-        const c = args.map.get("orientation").?.string;
+    if (values.orientation != null) {
+        const c = values.orientation.?;
         orientation = try allocPrint(allocator, "&orientation={s}", .{c});
     }
     const url = try allocPrint(
         allocator,
         "https://api.unsplash.com/search/photos?page={d}&per_page={d}&order_by={s}&content_filter={s}{s}{s}&query={s}",
-        .{ page.integer, per_page.integer, order_by.string, content_filter.string, color, orientation, query.string },
+        .{
+            values.page,
+            values.per_page,
+            values.order_by,
+            values.content_filter,
+            color,
+            orientation,
+            query,
+        },
     );
     var req = http.HttpRequest.init("GET", url);
     defer req.deinit(allocator);
