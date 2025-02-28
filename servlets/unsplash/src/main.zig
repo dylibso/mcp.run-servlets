@@ -27,14 +27,13 @@ pub fn call(input: schema.CallToolRequest) !schema.CallToolResult {
 
 fn getPhotos(args: json.Value) !schema.CallToolResult {
     const apiKey = try plugin.getConfig("API_KEY") orelse return error.MissingConfig;
-
-    const params = struct {
-        page: i64 = 1,
-        per_page: i64 = 10,
-    };
-
-    const parsed = try std.json.parseFromValue(params, allocator, args, .{});
-    const values = parsed.value;
+    const values = try readValue(
+        struct {
+            page: i64 = 1,
+            per_page: i64 = 10,
+        },
+        args,
+    );
 
     const url = try allocPrint(
         allocator,
@@ -67,11 +66,7 @@ fn getPhotos(args: json.Value) !schema.CallToolResult {
 
 fn getPhotosId(args: std.json.Value) !schema.CallToolResult {
     const apiKey = try plugin.getConfig("API_KEY") orelse return error.MissingConfig;
-    const params = struct {
-        id: ?[]const u8,
-    };
-    const parsed = try std.json.parseFromValue(params, allocator, args, .{});
-    const values = parsed.value;
+    const values = try readValue(struct { id: ?[]const u8 = null }, args);
 
     const id = values.id orelse return error.MissingArgument;
     const url = try allocPrint(
@@ -114,18 +109,19 @@ fn getPhotosId(args: std.json.Value) !schema.CallToolResult {
 
 fn searchPhotos(args: std.json.Value) !schema.CallToolResult {
     const apiKey = try plugin.getConfig("API_KEY") orelse return error.MissingConfig;
-    const params = struct {
-        query: ?[]const u8 = null,
-        page: i64 = 1,
-        per_page: i64 = 10,
-        order_by: []const u8 = "relevant",
-        content_filter: []const u8 = "low",
-        color: ?[]const u8 = null,
-        orientation: ?[]const u8 = null,
-    };
 
-    const parsed = try std.json.parseFromValue(params, allocator, args, .{});
-    const values = parsed.value;
+    const values = try readValue(
+        struct {
+            query: ?[]const u8 = null,
+            page: i64 = 1,
+            per_page: i64 = 10,
+            order_by: []const u8 = "relevant",
+            content_filter: []const u8 = "low",
+            color: ?[]const u8 = null,
+            orientation: ?[]const u8 = null,
+        },
+        args,
+    );
 
     const query = values.query orelse return callToolError("missing query");
     var color: []u8 = "";
@@ -172,6 +168,11 @@ fn searchPhotos(args: std.json.Value) !schema.CallToolResult {
             .text = body,
         }}),
     };
+}
+
+fn readValue(comptime T: type, value: json.Value) !T {
+    const parsed = try json.parseFromValue(T, allocator, value, .{});
+    return parsed.value;
 }
 
 fn callToolError(msg: []const u8) !schema.CallToolResult {
