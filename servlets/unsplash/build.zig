@@ -8,7 +8,7 @@ pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{
         .default_target = .{ .abi = .musl, .os_tag = BUILD_TARGET_OS, .cpu_arch = .wasm32 },
     });
-    const pdk_module = b.dependency("extism-pdk", .{ .target = target, .optimize = optimize }).module("extism-pdk");
+    const pdk_module = b.dependency("extismPdk", .{ .target = target, .optimize = optimize }).module("extism-pdk");
 
     var plugin = b.addExecutable(.{
         .name = "plugin",
