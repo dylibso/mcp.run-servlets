@@ -14,6 +14,10 @@ build:
   #!/usr/bin/env bash
   set -eou pipefail
   for dir in servlets/*/; do
+    if [ "$dir" == "servlets/sqlite/" ]; then
+      echo "Temporarily skipping $dir"
+      continue
+    fi
     cd "$dir"
     echo "Building $dir"
     just prepare
