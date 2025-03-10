@@ -47,22 +47,26 @@ pub(crate) fn call(input: types::CallToolRequest) -> Result<types::CallToolResul
     })
 }
 
-pub(crate) fn describe() -> Result<types::ToolDescription, Error> {
-    Ok(types::ToolDescription {
-        name: "wolfram_llm".to_string(),
-        description: "Query the Wolfram Alpha LLM API".to_string(),
-        input_schema: serde_json::json!({
-            "type": "object",
-            "properties": {
-                "query": {
-                    "type": "string",
-                    "description": "the question or prompt to send to Wolfram Alpha's LLM"
-                }
-            },
-            "required": ["query"]
-        })
-        .as_object()
-        .unwrap()
-        .clone(),
+pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
+    Ok(types::ListToolsResult {
+        tools: vec![
+            types::ToolDescription {
+                name: "wolfram_llm".to_string(),
+                description: "Query the Wolfram Alpha LLM API".to_string(),
+                input_schema: serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "the question or prompt to send to Wolfram Alpha's LLM"
+                        }
+                    },
+                    "required": ["query"]
+                })
+                .as_object()
+                .unwrap()
+                .clone(),
+            }
+        ],
     })
 }

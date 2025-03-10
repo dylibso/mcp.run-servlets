@@ -75,7 +75,13 @@ pub mod types {
     use super::*;
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub struct BlobResourceContents {
@@ -95,7 +101,13 @@ pub mod types {
     }
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub struct CallToolRequest {
@@ -109,7 +121,13 @@ pub mod types {
     }
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub struct CallToolResult {
@@ -126,7 +144,13 @@ pub mod types {
     }
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub struct Content {
@@ -158,7 +182,13 @@ pub mod types {
     }
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub enum ContentType {
@@ -172,7 +202,29 @@ pub mod types {
     }
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
+    )]
+    #[encoding(Json)]
+    pub struct ListToolsResult {
+        /// The list of ToolDescription objects provided by this servlet.
+        #[serde(rename = "tools")]
+        pub tools: Vec<types::ToolDescription>,
+    }
+
+    #[derive(
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub struct Params {
@@ -186,7 +238,13 @@ pub mod types {
     }
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub enum Role {
@@ -198,7 +256,13 @@ pub mod types {
     }
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub struct TextAnnotation {
@@ -218,7 +282,13 @@ pub mod types {
     }
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub struct TextResourceContents {
@@ -238,7 +308,13 @@ pub mod types {
     }
 
     #[derive(
-        Default, serde::Serialize, serde::Deserialize, extism_pdk::FromBytes, extism_pdk::ToBytes,
+        Default,
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+        extism_pdk::FromBytes,
+        extism_pdk::ToBytes,
     )]
     #[encoding(Json)]
     pub struct ToolDescription {

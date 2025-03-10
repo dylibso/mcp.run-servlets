@@ -48,8 +48,14 @@ export const SEARCH_PLACES_TOOL: ToolDescription = {
       location: {
         type: "object",
         properties: {
-          latitude: { type: "number" },
-          longitude: { type: "number" }
+          latitude: { 
+            type: "number",
+            description: "Latitude coordinate for the center point" 
+          },
+          longitude: { 
+            type: "number",
+            description: "Longitude coordinate for the center point"
+          }
         },
         description: "Optional center point for the search"
       },
@@ -114,8 +120,14 @@ export const ELEVATION_TOOL: ToolDescription = {
         items: {
           type: "object",
           properties: {
-            latitude: { type: "number" },
-            longitude: { type: "number" }
+            latitude: { 
+              type: "number",
+              description: "Latitude coordinate of the location"
+            },
+            longitude: { 
+              type: "number",
+              description: "Longitude coordinate of the location"
+            }
           },
           required: ["latitude", "longitude"]
         },
