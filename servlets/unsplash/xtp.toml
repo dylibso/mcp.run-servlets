@@ -1,0 +1,17 @@
+app_id = "app_01je4dgpcyfvgrz8f1ys3pbxas"
+
+# This is where 'xtp plugin push' expects to find the wasm file after the build script has run.
+bin = "zig-out/bin/plugin.wasm"
+extension_point_id = "ext_01je4jj1tteaktf0zd0anm8854"
+name = "unsplash"
+
+[scripts]
+
+  # xtp plugin build runs this script to generate the wasm file
+  build = "zig build"
+
+  # xtp plugin init runs this script to format the plugin code
+  format = "zig fmt ."
+
+  # xtp plugin init runs this script before running the format script
+  prepare = ""
