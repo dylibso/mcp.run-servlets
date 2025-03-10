@@ -8,7 +8,7 @@ name = "sqlite"
 [scripts]
 
   # xtp plugin build runs this script to generate the wasm file
-  build = "cargo build --release --target wasm32-wasip1"
+  build = 'PATH="$PWD/wasi-sdk/bin:$PATH"; cargo build --release --target wasm32-wasip1'
 
   # xtp plugin init runs this script to format the plugin code
   format = "cargo fmt"
