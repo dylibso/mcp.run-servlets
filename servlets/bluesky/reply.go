@@ -37,11 +37,11 @@ func reply(args map[string]any) (CallToolResult, error) {
 // - https://bsky.app/profile/<DID>/post/<RKEY>
 // - at://<DID>/app.bsky.feed.post/<RKEY>
 func webUriToAT(uri string) string {
-	if strings.HasPrefix(uri, "https://bsky.app/profile/") {
-		parts := strings.Split(uri, "/")
-		return fmt.Sprintf("at://%s/app.bsky.feed.post/%s", parts[3], parts[5])
+	uriParts, err := parseURI(uri)
+	if err != nil {
+		return uri
 	}
-	return uri
+	return fmt.Sprintf("at://%s/app.bsky.feed.post/%s", uriParts.Repo, uriParts.Rkey)
 }
 
 type UriParts struct {

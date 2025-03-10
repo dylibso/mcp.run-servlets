@@ -74,6 +74,9 @@ func getThread(args map[string]any) (CallToolResult, error) {
 	if !ok {
 		return callToolError("missing uri"), nil
 	}
+	// allow web URIs and conver them to AT URIs
+	uri = webUriToAT(uri)
+	pdk.Log(pdk.LogInfo, fmt.Sprintf("uri: %s", uri))
 	depth, ok := args["depth"].(int)
 	if !ok {
 		depth = 6
