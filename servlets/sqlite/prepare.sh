@@ -56,3 +56,11 @@ fi
 if ! (rustup target list --installed | grep -q '^wasm32-unknown-unknown$'); then
   rustup target add wasm32-unknown-unknown
 fi
+
+# Check for ./wasi-sdk
+if ! (command_exists wasi-sdk/bin/clang); then 
+  echo "Installing wasi-sdk."
+  echo ""
+  source ./install-wasi-sdk.sh
+  export PATH=$PWD/wasi-sdk/bin:$PATH
+fi
