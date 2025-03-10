@@ -6,9 +6,9 @@ command_exists () {
   command -v "$1" >/dev/null 2>&1
 }
 
-# Function to compare version numbers
-version_gt() {
-  test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1"
+# Function to compare version numbers for "less than"
+version_lt() {
+  test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" = "$1" && test "$1" != "$2"
 }
 
 missing_deps=0
@@ -81,7 +81,7 @@ if ! (command_exists tinygo); then
 else
   # Check TinyGo version
   tinygo_version=$(tinygo version | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -n1)
-  if ! version_gt "$tinygo_version" "0.33.0"; then
+  if version_lt "$tinygo_version" "0.34.0"; then
     missing_deps=1
     echo "❌ TinyGo version must be >= 0.34.0 (current version: $tinygo_version)"
     echo "Please update TinyGo to a newer version."
