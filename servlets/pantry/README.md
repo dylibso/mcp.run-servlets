@@ -13,4 +13,4 @@ Register a Pantry with just an email address on [Pantry](https://getpantry.cloud
 - getpantry.cloud
 
 ## Tools
-`pantry` takes an `action` (`get` or `post`) and a `basket` to identify the data. If `post` then it also takes a `body` parameter in JSON format.
+The `pantry` tool takes an `action` (`get` or `post`) and a `basket` to identify the data. If the action is `post` then it also takes a `body` parameter in JSON format.
