@@ -12,8 +12,7 @@
 
 - `brave-web-search` searches the Web for content (text, image, video, etc...). 
    Generally suitable for text-based searches.
-- `brave-image-search` to fetch pictures. Suggested use combined with the fetch tool,
-   which includes a generic image fetch tool
+- `brave-image-search` to search specifically for pictures.
 
 ## Example
 
