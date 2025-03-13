@@ -4,7 +4,6 @@ use std::collections::BTreeMap;
 
 use base64::Engine;
 use extism_pdk::*;
-use htmd::HtmlToMarkdown;
 use json::Value;
 use pdk::types::{
     CallToolRequest, CallToolResult, Content, ContentType, ListToolsResult, ToolDescription,
