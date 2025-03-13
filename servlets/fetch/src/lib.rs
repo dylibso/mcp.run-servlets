@@ -2,7 +2,6 @@ mod pdk;
 
 use std::collections::BTreeMap;
 
-use base64::Engine;
 use extism_pdk::*;
 use htmd::HtmlToMarkdown;
 use json::Value;
@@ -105,7 +104,7 @@ pub(crate) fn describe() -> Result<ListToolsResult, Error> {
                         },
                     },
                     "required": ["url"],
-                })            
+                })
                 .as_object()
                 .unwrap()
                 .clone(),
