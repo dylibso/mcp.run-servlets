@@ -20,7 +20,12 @@ Branches:
 - `gh-create-branch` Create a new branch
 - `gh-create-pull-request` Create a PR from a branch
 
+Gists
 
+- `gh-create-gist` Create a gist
+- `gh-update-gist` Create a gist
+- `gh-get-gist` Create a gist
+- `gh-delete-gist` Create a gist
 
 ## Config
 
