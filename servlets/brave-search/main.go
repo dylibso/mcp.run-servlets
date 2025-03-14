@@ -25,10 +25,6 @@ func loadKeys() {
 	apiKey = k
 }
 
-// Called when the tool is invoked.
-// If you support multiple tools, you must switch on the input.params.name to detect which tool is being called.
-// It takes CallToolRequest as input (The incoming tool request from the LLM)
-// And returns CallToolResult (The servlet's response to the given tool call)
 func Call(input CallToolRequest) (CallToolResult, error) {
 	loadKeys()
 	args := args{input.Params.Arguments.(map[string]any)}
