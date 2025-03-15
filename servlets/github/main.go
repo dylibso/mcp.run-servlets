@@ -116,6 +116,25 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 		repo, _ := args["repo"].(string)
 		return reposGetDetails(apiKey, owner, repo)
 
+	case CreateGistTool.Name:
+		description, _ := args["description"].(string)
+		files, _ := args["files"].(map[string]any)
+		return gistCreate(apiKey, description, files), nil
+
+	case GetGistTool.Name:
+		gistId, _ := args["gist_id"].(string)
+		return gistGet(apiKey, gistId), nil
+
+	case UpdateGistTool.Name:
+		gistId, _ := args["gist_id"].(string)
+		description, _ := args["description"].(string)
+		files, _ := args["files"].(map[string]any)
+		return gistUpdate(apiKey, gistId, description, files), nil
+
+	case DeleteGistTool.Name:
+		gistId, _ := args["gist_id"].(string)
+		return gistDelete(apiKey, gistId), nil
+
 	default:
 		return CallToolResult{
 			IsError: some(true),
@@ -134,6 +153,7 @@ func Describe() (ListToolsResult, error) {
 		FileTools,
 		BranchTools,
 		RepoTools,
+		GistTools,
 	}
 
 	tools := []ToolDescription{}
@@ -152,9 +172,10 @@ func some[T any](t T) *T {
 }
 
 type SchemaProperty struct {
-	Type        string  `json:"type"`
-	Description string  `json:"description,omitempty"`
-	Items       *schema `json:"items,omitempty"`
+	Type                 string  `json:"type"`
+	Description          string  `json:"description,omitempty"`
+	AdditionalProperties *schema `json:"additionalProperties,omitempty"`
+	Items                *schema `json:"items,omitempty"`
 }
 
 func prop(tpe, description string) SchemaProperty {
