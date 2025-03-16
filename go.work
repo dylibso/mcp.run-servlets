@@ -9,6 +9,7 @@ use (
 	./servlets/github
 	./servlets/google-maps-image
 	./servlets/historical-flight-api
+	./servlets/onedrive
 	./servlets/tenor-gifs
 	./servlets/trello
 	./servlets/wordpress
