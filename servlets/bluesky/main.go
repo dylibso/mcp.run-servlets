@@ -25,6 +25,8 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 		return reply(input.Params.Arguments.(map[string]any))
 	case "latest_mentions":
 		return latestMentions(input.Params.Arguments.(map[string]any))
+	case "search":
+		return search(input.Params.Arguments.(map[string]any))
 	case "get_thread":
 		return getThread(input.Params.Arguments.(map[string]any))
 	default:
