@@ -188,7 +188,7 @@ export function describeImpl(): ListToolsResult {
           model: {
             type: "string",
             description:
-              "The name of the model to use (e.g. 'sonar', 'sonar-pro', 'sonar-reasoning')",
+              "The name of the model to use (e.g. 'sonar', 'sonar-pro', 'sonar-reasoning', 'sonar-deep-research')"
           },
           messages: {
             type: "array",
