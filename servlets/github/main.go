@@ -78,6 +78,16 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 		}
 		return branchCreate(apiKey, owner, repo, from, maybeBranch), nil
 
+	case ListCommitsTool.Name:
+		owner, _ := args["owner"].(string)
+		repo, _ := args["repo"].(string)
+		return commitList(apiKey, owner, repo, args), nil
+	case GetCommitTool.Name:
+		owner, _ := args["owner"].(string)
+		repo, _ := args["repo"].(string)
+		ref, _ := args["ref"].(string)
+		return commitGet(apiKey, owner, repo, ref, args), nil
+
 	case ListPullRequestsTool.Name:
 		owner, _ := args["owner"].(string)
 		repo, _ := args["repo"].(string)
@@ -152,6 +162,7 @@ func Describe() (ListToolsResult, error) {
 		IssueTools,
 		FileTools,
 		BranchTools,
+		CommitTools,
 		RepoTools,
 		GistTools,
 	}
