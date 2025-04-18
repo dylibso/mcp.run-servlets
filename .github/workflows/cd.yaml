@@ -48,6 +48,11 @@ jobs:
         curl -LsSf https://astral.sh/uv/install.sh | sh
         curl -Ls https://raw.githubusercontent.com/extism/python-pdk/main/install.sh | bash
 
+    - name: Install Zig
+      uses: mlugg/setup-zig@v1
+      with:
+        version: 0.13.0
+
     - name: Install xtp CLI
       run: |
         curl -L https://static.dylibso.com/cli/install.sh -s | bash
