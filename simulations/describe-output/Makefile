@@ -1,5 +1,6 @@
 build:
-	tinygo build -target wasi -o plugin.wasm main.go
+	npm ci
+	npm run build
 
-test:
-	extism call plugin.wasm greet --input "world" --wasi
+test: build
+	xtp plugin test ../../servlets/crypto-hash/dist/plugin.wasm --with ./dist/plugin.wasm

@@ -182,9 +182,9 @@ func prop(tpe, description string) SchemaProperty {
 	return SchemaProperty{Type: tpe, Description: description}
 }
 
-func arrprop(tpe, description, itemstpe string) SchemaProperty {
+func arrprop(description, itemstpe string) SchemaProperty {
 	items := schema{"type": itemstpe}
-	return SchemaProperty{Type: tpe, Description: description, Items: &items}
+	return SchemaProperty{Type: "array", Description: description, Items: &items}
 }
 
 type schema = map[string]interface{}
