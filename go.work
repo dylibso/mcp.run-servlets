@@ -1,8 +1,9 @@
 go 1.23
 
 use (
-	./servlets/assembly-ai
 	./servlets/amadeus-flight-api
+	./servlets/assembly-ai
+	./servlets/bluesky
 	./servlets/brave-search
 	./servlets/crypto-hash
 	./servlets/github

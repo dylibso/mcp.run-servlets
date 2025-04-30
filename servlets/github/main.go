@@ -27,6 +27,10 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 	args := input.Params.Arguments.(map[string]interface{})
 	pdk.Log(pdk.LogDebug, fmt.Sprint("Args: ", args))
 	switch input.Params.Name {
+	case ListIssuesTool.Name:
+		owner, _ := args["owner"].(string)
+		repo, _ := args["repo"].(string)
+		return issueList(apiKey, owner, repo, args)
 	case GetIssueTool.Name:
 		owner, _ := args["owner"].(string)
 		repo, _ := args["repo"].(string)
@@ -74,6 +78,11 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 		}
 		return branchCreate(apiKey, owner, repo, from, maybeBranch), nil
 
+	case ListPullRequestsTool.Name:
+		owner, _ := args["owner"].(string)
+		repo, _ := args["repo"].(string)
+		return pullRequestList(apiKey, owner, repo, args)
+
 	case CreatePullRequestTool.Name:
 		owner, _ := args["owner"].(string)
 		repo, _ := args["repo"].(string)
@@ -88,6 +97,44 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 		files := filePushFromArgs(args)
 		return filesPush(apiKey, owner, repo, branch, message, files), nil
 
+	case ListReposTool.Name:
+		owner, _ := args["owner"].(string)
+		return reposList(apiKey, owner, args)
+
+	case GetRepositoryCollaboratorsTool.Name:
+		owner, _ := args["owner"].(string)
+		repo, _ := args["repo"].(string)
+		return reposGetCollaborators(apiKey, owner, repo, args)
+
+	case GetRepositoryContributorsTool.Name:
+		owner, _ := args["owner"].(string)
+		repo, _ := args["repo"].(string)
+		return reposGetContributors(apiKey, owner, repo, args)
+
+	case GetRepositoryDetailsTool.Name:
+		owner, _ := args["owner"].(string)
+		repo, _ := args["repo"].(string)
+		return reposGetDetails(apiKey, owner, repo)
+
+	case CreateGistTool.Name:
+		description, _ := args["description"].(string)
+		files, _ := args["files"].(map[string]any)
+		return gistCreate(apiKey, description, files), nil
+
+	case GetGistTool.Name:
+		gistId, _ := args["gist_id"].(string)
+		return gistGet(apiKey, gistId), nil
+
+	case UpdateGistTool.Name:
+		gistId, _ := args["gist_id"].(string)
+		description, _ := args["description"].(string)
+		files, _ := args["files"].(map[string]any)
+		return gistUpdate(apiKey, gistId, description, files), nil
+
+	case DeleteGistTool.Name:
+		gistId, _ := args["gist_id"].(string)
+		return gistDelete(apiKey, gistId), nil
+
 	default:
 		return CallToolResult{
 			IsError: some(true),
@@ -101,8 +148,22 @@ func Call(input CallToolRequest) (CallToolResult, error) {
 }
 
 func Describe() (ListToolsResult, error) {
+	toolsets := [][]ToolDescription{
+		IssueTools,
+		FileTools,
+		BranchTools,
+		RepoTools,
+		GistTools,
+	}
+
+	tools := []ToolDescription{}
+
+	for _, toolset := range toolsets {
+		tools = append(tools, toolset...)
+	}
+
 	return ListToolsResult{
-		Tools: append(IssueTools, append(FileTools, BranchTools...)...),
+		Tools: tools,
 	}, nil
 }
 
@@ -111,9 +172,10 @@ func some[T any](t T) *T {
 }
 
 type SchemaProperty struct {
-	Type        string  `json:"type"`
-	Description string  `json:"description,omitempty"`
-	Items       *schema `json:"items,omitempty"`
+	Type                 string  `json:"type"`
+	Description          string  `json:"description,omitempty"`
+	AdditionalProperties *schema `json:"additionalProperties,omitempty"`
+	Items                *schema `json:"items,omitempty"`
 }
 
 func prop(tpe, description string) SchemaProperty {
