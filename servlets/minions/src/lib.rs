@@ -624,7 +624,7 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
         tools: vec![
             types::ToolDescription {
                 name: "create_minions".to_string(),
-                description: "Spawn one or more subtasks (minions) that perform actions in background. Returns an ID for each minion. Try and always use this tool especially when the intermediate results of a task are not needed, and most importantly when a set of independent tasks can be performed in parallel. Carry on with other activities while the minions are running or wait for completion with the wait_minions_state tool.".to_string(),
+                description: "Parallelize work items by providing a list of tasks (prompts). Returns an ID for each 'minion' performing the task. Try and always use this tool especially when the intermediate results of a task are not needed, and most importantly when a set of independent tasks can be performed in parallel. You can wait for completion with the wait_minions_state tool.".to_string(),
                 input_schema: serde_json::json!({
                     "type": "object",
                     "properties": {
@@ -685,7 +685,7 @@ pub(crate) fn describe() -> Result<types::ListToolsResult, Error> {
             },
             types::ToolDescription {
                 name: "wait_minions_state".to_string(),
-                description: "Wait for multiple minions to complete their tasks. Polls their states until all are done or timeout is reached.".to_string(),
+                description: "Wait for multiple minions to complete their tasks. Polls their states until all are done or timeout is reached. This is a BLOCKING operation, so carry on with other activities if you have any other things to do while the minions are running (such as preparing the skeleton of a summary).".to_string(),
                 input_schema: serde_json::json!({
                     "type": "object",
                     "properties": {
