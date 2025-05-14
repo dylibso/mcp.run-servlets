@@ -1,1 +1,39 @@
-{"content":[{"mimeType":"application/json","text":"{\"minion_ids\":[\"minion-0\",\"minion-1\",\"minion-2\"],\"mob_id\":\"mob-123\"}","type":"text"}]}
+[DEBUG] SQL Query: SELECT value, status FROM minion_states WHERE minion_id = '529ddd09-ba92-4e34-99c9-0952f284145b'
+[DEBUG] Request payload: {"sql":"SELECT value, status FROM minion_states WHERE minion_id = '529ddd09-ba92-4e34-99c9-0952f284145b'"}
+[DEBUG] Raw response body: {"result":[{"results":[{"value":"Task A is fully completed.","status":"done"}],"success":true,"meta":{"served_by":"v3-prod","served_by_region":"WEUR","served_by_primary":true,"timings":{"sql_duration_ms":0.5477},"duration":0.5477,"changes":0,"last_row_id":0,"changed_db":false,"size_after":20480,"rows_read":1,"rows_written":0}}],"errors":[],"messages":[],"success":true}
+[DEBUG] Parsed JSON: {
+  "errors": [],
+  "messages": [],
+  "result": [
+    {
+      "meta": {
+        "changed_db": false,
+        "changes": 0,
+        "duration": 0.5477,
+        "last_row_id": 0,
+        "rows_read": 1,
+        "rows_written": 0,
+        "served_by": "v3-prod",
+        "served_by_primary": true,
+        "served_by_region": "WEUR",
+        "size_after": 20480,
+        "timings": {
+          "sql_duration_ms": 0.5477
+        }
+      },
+      "results": [
+        {
+          "status": "done",
+          "value": "Task A is fully completed."
+        }
+      ],
+      "success": true
+    }
+  ],
+  "success": true
+}
+[DEBUG] Found row: {
+  "status": "done",
+  "value": "Task A is fully completed."
+}
+{"content":[{"mimeType":"application/json","text":"{\"minion_id\":\"529ddd09-ba92-4e34-99c9-0952f284145b\",\"status\":\"done\",\"value\":\"Task A is fully completed.\"}","type":"text"}]}
